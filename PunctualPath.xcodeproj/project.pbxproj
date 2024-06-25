@@ -13,7 +13,6 @@
 		CF19AD6D2C16EF3B004BCA08 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CF19AD6C2C16EF3B004BCA08 /* Preview Assets.xcassets */; };
 		CF433D172C1C216B00FF0E7F /* LineSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF433D162C1C216B00FF0E7F /* LineSearchView.swift */; };
 		CF433D192C1C22F300FF0E7F /* SupportedLines.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF433D182C1C22F300FF0E7F /* SupportedLines.swift */; };
-		CF433D1B2C1DEF0900FF0E7F /* 01.txt in Resources */ = {isa = PBXBuildFile; fileRef = CF433D1A2C1DEF0900FF0E7F /* 01.txt */; };
 		CF433D1D2C242A2700FF0E7F /* GetLines.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF433D1C2C242A2700FF0E7F /* GetLines.swift */; };
 /* End PBXBuildFile section */
 
@@ -25,7 +24,6 @@
 		CF19AD6C2C16EF3B004BCA08 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		CF433D162C1C216B00FF0E7F /* LineSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineSearchView.swift; sourceTree = "<group>"; };
 		CF433D182C1C22F300FF0E7F /* SupportedLines.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedLines.swift; sourceTree = "<group>"; };
-		CF433D1A2C1DEF0900FF0E7F /* 01.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = 01.txt; sourceTree = "<group>"; };
 		CF433D1C2C242A2700FF0E7F /* GetLines.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetLines.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -63,7 +61,6 @@
 				CF19AD672C16EF39004BCA08 /* ContentView.swift */,
 				CF433D162C1C216B00FF0E7F /* LineSearchView.swift */,
 				CF433D1C2C242A2700FF0E7F /* GetLines.swift */,
-				CF433D1A2C1DEF0900FF0E7F /* 01.txt */,
 				CF433D182C1C22F300FF0E7F /* SupportedLines.swift */,
 				CF19AD692C16EF3B004BCA08 /* Assets.xcassets */,
 				CF19AD6B2C16EF3B004BCA08 /* Preview Content */,
@@ -139,7 +136,6 @@
 			files = (
 				CF19AD6D2C16EF3B004BCA08 /* Preview Assets.xcassets in Resources */,
 				CF19AD6A2C16EF3B004BCA08 /* Assets.xcassets in Resources */,
-				CF433D1B2C1DEF0900FF0E7F /* 01.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

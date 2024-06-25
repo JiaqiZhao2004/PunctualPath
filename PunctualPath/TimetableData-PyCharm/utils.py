@@ -1,11 +1,10 @@
-import bisect
-import colorsys
 import json
 from enum import Enum
 import requests
 from PIL import Image, ImageEnhance
 from bs4 import BeautifulSoup
 from tqdm import tqdm
+from datetime import datetime
 
 
 class OperationTime(Enum):
@@ -13,7 +12,7 @@ class OperationTime(Enum):
     WEEKEND = "双休日"
 
 
-class Time(object):
+class Date(object):
     def __init__(self, yyyy: int, mm: int, dd: int):
         self.yyyy = yyyy
         self.mm = mm
@@ -50,42 +49,42 @@ class TimetableURL(object):
 class Station(object):
     def __init__(self, native_name: str):
         self.native_name = native_name
-        self.weekday_tb = []
-        self.weekend_tb = []
+        self.weekday_urls: list[str] = []
+        self.weekend_urls: list[str] = []
 
     def __str__(self):
         return self.native_name
 
-    def add_timetable(self, timetable_url: str):
+    def add_url(self, timetable_url: str):
         if '工作日' in timetable_url:
-            self.weekday_tb.append(timetable_url)
+            self.weekday_urls.append(timetable_url)
         else:
-            self.weekend_tb.append(timetable_url)
+            self.weekend_urls.append(timetable_url)
 
-    def get_tb(self, time: OperationTime):
+    def get_tb_urls(self, time: OperationTime):
         if time == OperationTime.WEEKDAY:
-            if self.weekday_tb.__len__() == 1:
-                return TimetableURL(self.weekday_tb[0])
-            return TimetableURL(self.weekday_tb[0], self.weekday_tb[1])
+            if self.weekday_urls.__len__() == 1:
+                return TimetableURL(self.weekday_urls[0])
+            return TimetableURL(self.weekday_urls[0], self.weekday_urls[1])
         elif time == OperationTime.WEEKEND:
-            if self.weekend_tb.__len__() == 1:
-                return TimetableURL(self.weekend_tb[0])
-            return TimetableURL(self.weekend_tb[0], self.weekend_tb[1])
+            if self.weekend_urls.__len__() == 1:
+                return TimetableURL(self.weekend_urls[0])
+            return TimetableURL(self.weekend_urls[0], self.weekend_urls[1])
         else:
             raise ValueError
 
     def to_dict(self):
         return {
             'native_name': self.native_name,
-            'weekday_tb': self.weekday_tb,
-            'weekend_tb': self.weekend_tb
+            'weekday_tb': self.weekday_urls,
+            'weekend_tb': self.weekend_urls
         }
 
     @classmethod
     def from_dict(cls, data):
         station = cls(data['native_name'])
-        station.weekday_tb = data['weekday_tb']
-        station.weekend_tb = data['weekend_tb']
+        station.weekday_urls = data['weekday_tb']
+        station.weekend_urls = data['weekend_tb']
         return station
 
 
@@ -172,6 +171,54 @@ class TimeTable(object):
     def __str__(self):
         return "Timetable:\n" + '\n'.join(str(row) for row in self.rows)
 
+    def to_list(self) -> list[int]:
+        schedule: list[int] = []
+        for row in self.rows:
+            for minute in row.minutes:
+                schedule.append(hms_to_sec(row.hour, minute, 0))
+        return schedule
+
+    def next_train(self, h=None, m=None, s=0):
+        if h is None or m is None:
+            h, m, s = get_current_time()
+        now_sec: int = hms_to_sec(h, m, s)
+        schedule: list[int] = self.to_list()
+        next_train = None
+        next_2nd_train = None
+        for i, timestamp in enumerate(schedule):
+            if now_sec < safe_time(timestamp):
+                next_train = sec_to_hms(safe_time(timestamp) - now_sec)
+                if i == len(schedule) - 1:
+                    next_2nd_train = sec_to_hms(safe_time(schedule[0]) - now_sec)
+                else:
+                    next_2nd_train = sec_to_hms(safe_time(schedule[i + 1]) - now_sec)
+                break
+        if next_train is None:
+            return "No more trains"
+        return f"\r{next_train[1]}:{next_train[2]}, {next_2nd_train[1]}:{next_2nd_train[2]}"
+
+
+def safe_time(seconds: int) -> int:
+    return seconds - 40
+
+
+def hms_to_sec(h: int, m: int, s: int) -> int:
+    return int(h) * 3600 + int(m) * 60 + int(s)
+
+
+def sec_to_hms(s: int):
+    h = int(s / 3600)
+    s = s % 3600
+    m = int(s / 60)
+    s = s % 60
+    return h, m, s
+
+
+def get_current_time():
+    time = datetime.now().strftime('%H:%M:%S')
+    hour, minute, second = time.split(':')
+    return int(hour), int(minute), int(second)
+
 
 def get_station_timetables_url(station_url, root_path="https://www.bjsubway.com"):
     response = requests.get(root_path + station_url, stream=True)
@@ -211,7 +258,7 @@ def get_lines() -> BeijingSubway:
                 station_href = a_element['href']
                 station_timetables_url = get_station_timetables_url(station_href)
                 for url in station_timetables_url:
-                    station.add_timetable(url)
+                    station.add_url(url)
             stations[station_native_name] = station
             next_elem = next_elem.find_next_sibling()
 
