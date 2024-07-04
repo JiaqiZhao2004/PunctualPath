@@ -11,7 +11,7 @@ import SwiftUI
 struct PunctualPathApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            LineSearchView()
         }
     }
 }

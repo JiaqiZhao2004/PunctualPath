@@ -23,26 +23,22 @@ class Date(object):
 
 
 class TimetableURL(object):
-    def __init__(self, direction_1_url: str, direction_2_url: str = ""):
-        self.direction_1_url = direction_1_url
-        self.direction_2_url = direction_2_url
-        self.url = self.direction_1_url
+    def __init__(self):
+        self.urls: list[str] = []
 
     def __str__(self):
-        return f"{self.url}"
+        return f"{self.urls}"
+
+    def add_url(self, url: str):
+        self.urls.append(url)
 
     def switch(self):
-        if self.direction_2_url == "":
-            return self
-        if self.url == self.direction_1_url:
-            self.url = self.direction_2_url
-        else:
-            self.url = self.direction_1_url
+        self.urls = self.urls[1:] + self.urls[:1]
         return self
 
     def get_img(self) -> Image.Image:
-        print(f"Getting image from {self.url}")
-        img = Image.open(requests.get(self.url, stream=True).raw)
+        print(f"Getting image from {self.urls[0]}")
+        img = Image.open(requests.get(self.urls[0], stream=True).raw)
         return img
 
 
@@ -51,6 +47,7 @@ class Station(object):
         self.native_name = native_name
         self.weekday_urls: list[str] = []
         self.weekend_urls: list[str] = []
+        self.unknown_urls: list[str] = []
 
     def __str__(self):
         return self.native_name
@@ -58,26 +55,30 @@ class Station(object):
     def add_url(self, timetable_url: str):
         if '工作日' in timetable_url:
             self.weekday_urls.append(timetable_url)
-        else:
+        if '双休日' in timetable_url:
             self.weekend_urls.append(timetable_url)
+        if '工作日' not in timetable_url and '双休日' not in timetable_url:
+            self.unknown_urls.append(timetable_url)
 
     def get_tb_urls(self, time: OperationTime):
+        urls = TimetableURL()
         if time == OperationTime.WEEKDAY:
-            if self.weekday_urls.__len__() == 1:
-                return TimetableURL(self.weekday_urls[0])
-            return TimetableURL(self.weekday_urls[0], self.weekday_urls[1])
+            for weekday_url in self.weekday_urls:
+                urls.add_url(weekday_url)
         elif time == OperationTime.WEEKEND:
-            if self.weekend_urls.__len__() == 1:
-                return TimetableURL(self.weekend_urls[0])
-            return TimetableURL(self.weekend_urls[0], self.weekend_urls[1])
-        else:
-            raise ValueError
+            for weekend_url in self.weekend_urls:
+                urls.add_url(weekend_url)
+        if len(urls.urls) == 0:
+            for unknown_url in self.unknown_urls:
+                urls.add_url(unknown_url)
+        return urls
 
     def to_dict(self):
         return {
             'native_name': self.native_name,
             'weekday_tb': self.weekday_urls,
-            'weekend_tb': self.weekend_urls
+            'weekend_tb': self.weekend_urls,
+            'unknown_tb': self.unknown_urls
         }
 
     @classmethod
@@ -85,12 +86,14 @@ class Station(object):
         station = cls(data['native_name'])
         station.weekday_urls = data['weekday_tb']
         station.weekend_urls = data['weekend_tb']
+        station.unknown_urls = data['unknown_tb']
         return station
 
 
 class Line(object):
-    def __init__(self, native_name: str, stations: dict[str, Station]):
+    def __init__(self, native_name: str, station_list: list[str], stations: dict[str, Station]):
         self.native_name = native_name
+        self.station_list = station_list
         self.stations = stations
         assert len(self.stations) >= 2
 
@@ -100,6 +103,9 @@ class Line(object):
 
     def get_station(self, station: str):
         return self.stations.get(station)
+
+    def get_stations(self):
+        return self.stations.values()
 
     def to_dict(self):
         # Convert the stations dictionary to a JSON-serializable dictionary
@@ -122,10 +128,13 @@ class BeijingSubway(object):
         if lines is None:
             lines = dict()
         self.name = "BeijingSubway"
-        self.lines = lines
+        self.lines: dict[str, Line] = lines
 
     def get_line(self, line: str):
         return self.lines.get(line)
+
+    def get_lines(self):
+        return self.lines.values()
 
     def __getitem__(self, key: str):
         return self.lines[key]

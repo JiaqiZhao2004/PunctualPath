@@ -59,7 +59,7 @@ def locate_nth_color_change(img: Image.Image,
     if isinstance(start[0], int):
         x, y = start
     else:
-        x, y = int(start[0] * width), int(start[1] * width)
+        x, y = int(start[0] * width), int(start[1] * height)
 
     if skip_x == 0 and skip_y == 0:
         if vertical:
@@ -98,7 +98,7 @@ def locate_nth_color_change(img: Image.Image,
 
 
 def locate_hour_strip(img: Image.Image, verbose=False) -> tuple:
-    left_0 = locate_nth_color_change(img, 2, vertical=False, start=(0.02, 0.5), tolerance_high=50)
+    left_0 = locate_nth_color_change(img, 2, vertical=False, start=(0.02, 0.4), tolerance_high=50)
     left = locate_nth_color_change(img, 1, vertical=True, start=left_0, skip_x=1, skip_y=1)
     right = locate_nth_color_change(img, 1, vertical=False, start=left)
     if verbose:
