@@ -125,10 +125,12 @@ class Station: CustomStringConvertible {
 
 class Line: CustomStringConvertible {
     var nativeName: String
+    var stationList: [String]
     var stations: [String: Station]
 
-    init(nativeName: String, stations: [String: Station]) {
+    init(nativeName: String, stationList: [String], stations: [String: Station]) {
         self.nativeName = nativeName
+        self.stationList = stationList
         self.stations = stations
         assert(self.stations.count >= 2)
     }
@@ -140,6 +142,12 @@ class Line: CustomStringConvertible {
 
     func getStation(_ station: String) -> Station? {
         return stations[station]
+    }
+    
+    func getOrderedStations() -> [Station] {
+        return stationList.compactMap { stationName in
+            return stations[stationName]
+        }
     }
 
     func getStations() -> [Station] {
@@ -154,6 +162,7 @@ class Line: CustomStringConvertible {
         }
         return [
             "native_name": nativeName,
+            "station_list": stationList,
             "stations": stationsDict
         ]
     }
@@ -161,12 +170,13 @@ class Line: CustomStringConvertible {
     static func fromDict(_ data: [String: Any]) -> Line {
         // Convert the JSON-serializable dictionary back to a dictionary of Station objects
         var stations: [String: Station] = [:]
+        let stationList: [String] = data["station_list"] as! [String]
         if let stationData = data["stations"] as? [String: [String: Any]] {
             for (name, stationDict) in stationData {
                 stations[name] = Station.fromDict(stationDict)
             }
         }
-        return Line(nativeName: data["native_name"] as! String, stations: stations)
+        return Line(nativeName: data["native_name"] as! String, stationList: stationList, stations: stations)
     }
 }
 

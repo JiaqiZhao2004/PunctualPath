@@ -212,12 +212,14 @@ func getLines() -> BeijingSubway {
             
             // Find stations for the current line
             var stations: [String: Station] = [:]
+            var stationList: [String] = []
             
             var nextElem = lineElem.nextSibling
             
+            
             while let elem = nextElem, elem.className == "station" {
                 let stationNativeName = elem.text!.trimmingCharacters(in: .whitespacesAndNewlines)
-                
+                stationList.append(stationNativeName)
                 if let aElement = elem.at_xpath("a"), let stationHref = aElement["href"] {
                     let stationTimetablesUrl = getStationTimetablesUrl(stationUrl: stationHref)
                     let station = Station(nativeName: stationNativeName)
@@ -233,7 +235,7 @@ func getLines() -> BeijingSubway {
                 nextElem = elem.nextSibling
             }
             
-            lines[lineNativeName] = Line(nativeName: lineNativeName, stations: stations)
+            lines[lineNativeName] = Line(nativeName: lineNativeName, stationList: stationList, stations: stations)
             break
         }
         

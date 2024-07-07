@@ -85,7 +85,7 @@ class LineSearchViewModel: ObservableObject {
         direction = ""
         enteredStationName = ""
         enteredLineName = lineName
-        allLineStations = line?.getStations().map { $0.nativeName } ?? []
+        allLineStations = line?.getOrderedStations().map { $0.nativeName } ?? []
     }
     
     func selectStation(stationName: String) {

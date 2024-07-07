@@ -112,6 +112,7 @@ class Line(object):
         stations_dict = {name: station.to_dict() for name, station in self.stations.items()}
         return {
             'native_name': self.native_name,
+            'station_list': self.station_list,
             'stations': stations_dict
         }
 
@@ -119,7 +120,7 @@ class Line(object):
     def from_dict(cls, data):
         # Convert the JSON-serializable dictionary back to a dictionary of Station objects
         stations = {name: Station.from_dict(station_data) for name, station_data in data['stations'].items()}
-        return cls(data['native_name'], stations)
+        return cls(data['native_name'], data['station_list'], stations)
 
 
 class BeijingSubway(object):
@@ -258,9 +259,12 @@ def get_lines() -> BeijingSubway:
         # Find stations for the current line
         stations: dict[str, Station] = {}
 
+        station_list: list[str] = []
+
         next_elem = line_elem.find_next_sibling()
         while next_elem and next_elem.get('class') == ['station']:
             station_native_name = next_elem.text.strip()
+            station_list.append(station_native_name)
             a_element = next_elem.find('a')
             station = Station(native_name=station_native_name)
             if a_element is not None:
@@ -271,7 +275,7 @@ def get_lines() -> BeijingSubway:
             stations[station_native_name] = station
             next_elem = next_elem.find_next_sibling()
 
-        lines[line_native_name] = Line(native_name=line_native_name,
+        lines[line_native_name] = Line(native_name=line_native_name, station_list=station_list,
                                        stations=stations)
 
     return lines

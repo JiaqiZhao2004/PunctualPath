@@ -16,8 +16,8 @@
 		CFAA15252C2AFA950080817F /* BeijingSubway.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA15242C2AFA950080817F /* BeijingSubway.swift */; };
 		CFAA15272C2AFD290080817F /* Timetable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA15262C2AFD290080817F /* Timetable.swift */; };
 		CFAA152A2C2AFFCE0080817F /* Kanna in Frameworks */ = {isa = PBXBuildFile; productRef = CFAA15292C2AFFCE0080817F /* Kanna */; };
-		CFAA15342C3275B40080817F /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = CFAA15332C3275B40080817F /* urls.json */; };
 		CFAA15382C3521B00080817F /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA15372C3521B00080817F /* RootView.swift */; };
+		CFAA153A2C3802890080817F /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = CFAA15392C3802890080817F /* urls.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,8 +30,8 @@
 		CF433D182C1C22F300FF0E7F /* SupportedLines.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedLines.swift; sourceTree = "<group>"; };
 		CFAA15242C2AFA950080817F /* BeijingSubway.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeijingSubway.swift; sourceTree = "<group>"; };
 		CFAA15262C2AFD290080817F /* Timetable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timetable.swift; sourceTree = "<group>"; };
-		CFAA15332C3275B40080817F /* urls.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = urls.json; sourceTree = "<group>"; };
 		CFAA15372C3521B00080817F /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		CFAA15392C3802890080817F /* urls.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = urls.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,7 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				CF19AD652C16EF39004BCA08 /* PunctualPathApp.swift */,
-				CFAA15332C3275B40080817F /* urls.json */,
+				CFAA15392C3802890080817F /* urls.json */,
 				CFAA15242C2AFA950080817F /* BeijingSubway.swift */,
 				CF19AD672C16EF39004BCA08 /* TimerView.swift */,
 				CFAA15372C3521B00080817F /* RootView.swift */,
@@ -152,7 +152,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CFAA15342C3275B40080817F /* urls.json in Resources */,
+				CFAA153A2C3802890080817F /* urls.json in Resources */,
 				CF19AD6D2C16EF3B004BCA08 /* Preview Assets.xcassets in Resources */,
 				CF19AD6A2C16EF3B004BCA08 /* Assets.xcassets in Resources */,
 			);
