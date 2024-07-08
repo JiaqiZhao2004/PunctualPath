@@ -18,6 +18,8 @@
 		CFAA152A2C2AFFCE0080817F /* Kanna in Frameworks */ = {isa = PBXBuildFile; productRef = CFAA15292C2AFFCE0080817F /* Kanna */; };
 		CFAA15382C3521B00080817F /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA15372C3521B00080817F /* RootView.swift */; };
 		CFAA153A2C3802890080817F /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = CFAA15392C3802890080817F /* urls.json */; };
+		CFAA153C2C3BA8EB0080817F /* ImageProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA153B2C3BA8EB0080817F /* ImageProcessing.swift */; };
+		CFAA153E2C3BAE610080817F /* LoadingAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA153D2C3BAE610080817F /* LoadingAlertView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +34,8 @@
 		CFAA15262C2AFD290080817F /* Timetable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timetable.swift; sourceTree = "<group>"; };
 		CFAA15372C3521B00080817F /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		CFAA15392C3802890080817F /* urls.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = urls.json; sourceTree = "<group>"; };
+		CFAA153B2C3BA8EB0080817F /* ImageProcessing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessing.swift; sourceTree = "<group>"; };
+		CFAA153D2C3BAE610080817F /* LoadingAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingAlertView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,7 +75,9 @@
 				CF19AD672C16EF39004BCA08 /* TimerView.swift */,
 				CFAA15372C3521B00080817F /* RootView.swift */,
 				CFAA15262C2AFD290080817F /* Timetable.swift */,
+				CFAA153B2C3BA8EB0080817F /* ImageProcessing.swift */,
 				CF433D162C1C216B00FF0E7F /* LineSearchView.swift */,
+				CFAA153D2C3BAE610080817F /* LoadingAlertView.swift */,
 				CF433D182C1C22F300FF0E7F /* SupportedLines.swift */,
 				CF19AD692C16EF3B004BCA08 /* Assets.xcassets */,
 				CF19AD6B2C16EF3B004BCA08 /* Preview Content */,
@@ -165,10 +171,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CFAA153C2C3BA8EB0080817F /* ImageProcessing.swift in Sources */,
 				CF433D192C1C22F300FF0E7F /* SupportedLines.swift in Sources */,
 				CF19AD682C16EF39004BCA08 /* TimerView.swift in Sources */,
 				CFAA15382C3521B00080817F /* RootView.swift in Sources */,
 				CFAA15252C2AFA950080817F /* BeijingSubway.swift in Sources */,
+				CFAA153E2C3BAE610080817F /* LoadingAlertView.swift in Sources */,
 				CF19AD662C16EF39004BCA08 /* PunctualPathApp.swift in Sources */,
 				CF433D172C1C216B00FF0E7F /* LineSearchView.swift in Sources */,
 				CFAA15272C2AFD290080817F /* Timetable.swift in Sources */,

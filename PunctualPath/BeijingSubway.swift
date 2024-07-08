@@ -55,6 +55,30 @@ class TimetableURL {
         }
         task.resume()
     }
+
+    func getImg() async -> UIImage? {
+        guard !urls.isEmpty else {
+            return nil
+        }
+        print("Getting image from \(urls[0])")
+        guard let url = URL(string: urls[0]) else {
+            return nil
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Invalid response")
+                return nil
+            }
+            let image = UIImage(data: data)
+            return image
+        } catch {
+            print("Download error: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
 }
 
 

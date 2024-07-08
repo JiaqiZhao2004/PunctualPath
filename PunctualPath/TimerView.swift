@@ -15,7 +15,7 @@ struct TimerView: View {
     var body: some View {
         ZStack {
             VStack {
-                LineSearchView()
+//                LineSearchView()
                 Text("Time: \(timeRemaining)")
                     .font(.largeTitle)
                     .foregroundStyle(.white)
