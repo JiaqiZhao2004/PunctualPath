@@ -268,7 +268,7 @@ struct LineSearchView: View {
             Button(action: {
                 // Perform search or action
 //                viewModel.search()
-                if let url = viewModel.timeTableUrl {
+                if viewModel.timeTableUrl != nil {
                     isImgDownloadViewPresented = true
                 }
             }) {
@@ -295,12 +295,12 @@ struct LineSearchView: View {
 }
 
 
-
 #Preview {
     NavigationStack {
         LineSearchView()
     }
 }
+
 
 extension String.Encoding{
     public static let gbk: String.Encoding = {

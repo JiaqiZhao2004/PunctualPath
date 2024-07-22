@@ -2,7 +2,7 @@ import colorsys
 
 import cv2
 import numpy as np
-from PIL import Image, ImageEnhance, ImageFilter
+from PIL import Image
 from matplotlib import pyplot as plt
 from ocrmac import ocrmac
 

@@ -1,41 +1,61 @@
-import json
-import time
-from enum import Enum
-from PIL import Image
-from ImageProcessing import load_timetable
-from utils import get_lines, OperationTime, BeijingSubway
 
-# class SavedJPG(Enum):
-#     WUKESONG = "1号线-五棵松站-古城站方向-双休日.jpg"
-#     GUOMAO = "1号线-国贸站-环球度假区站方向-工作日.jpg"
-#     GULOUDAJIE = "2号线-鼓楼大街站-积水潭站方向-工作日.jpg"
-#     BEIXINQIAO = "5号线-北新桥站-天通苑北站方向-双休日.jpg"
-# code = SavedJPG.GUOMAO
-# img = Image.open(code.value)
+class Row(object):
+    def __init__(self, hour: int):
+        self.hour = hour
+        self.minutes: list[int] = []
 
-path = "data/urls.json"
-lines = BeijingSubway.from_json_file(path)
-
-# for line in lines.get_lines():
-#     for station in line.get_stations():
-#         for TIME in OperationTime:
-#             for url in station.get_tb_urls(TIME):
+    def __str__(self):
+        return str(self.hour) + '\t' + ' '.join(['0' + str(m) if len(str(m)) == 1 else str(m) for m in self.minutes])
 
 
-    # for station in lines.get_line(line_name).stations:
-    #     print(station.native_name)
-    #     for time in OperationTime:
-    #         print(time)
+class TimeTable(object):
+    def __init__(self):
+        self.rows: list[Row] = []
 
-# station_images = lines.get_line("1号线/八通线").get_station("八宝山").get_tb_urls(OperationTime.WEEKDAY)
-# img: Image.Image = station_images.get_img()
-# # img.show()
-#
-# table = load_timetable(img, filter=True, verbose=False)
-# print(table)
-#
-# while True:
-#     # Code executed here
-#     print('\r' + table.next_train(), end='')
-#     time.sleep(1)
+    def add_row(self, row: Row):
+        self.rows.append(row)
 
+    def __str__(self):
+        return "Timetable:\n" + '\n'.join(str(row) for row in self.rows)
+
+    def to_list(self) -> list[int]:
+        schedule: list[int] = []
+        for row in self.rows:
+            for minute in row.minutes:
+                schedule.append(hms_to_sec(row.hour, minute, 0))
+        return schedule
+
+    def next_train(self, h=None, m=None, s=0):
+        if h is None or m is None:
+            h, m, s = get_current_time()
+        now_sec: int = hms_to_sec(h, m, s)
+        schedule: list[int] = self.to_list()
+        next_train = None
+        next_2nd_train = None
+        for i, timestamp in enumerate(schedule):
+            if now_sec < safe_time(timestamp):
+                next_train = sec_to_hms(safe_time(timestamp) - now_sec)
+                if i == len(schedule) - 1:
+                    next_2nd_train = sec_to_hms(safe_time(schedule[0]) - now_sec)
+                else:
+                    next_2nd_train = sec_to_hms(safe_time(schedule[i + 1]) - now_sec)
+                break
+        if next_train is None:
+            return "No more trains"
+        return f"\r{next_train[1]}:{next_train[2]}, {next_2nd_train[1]}:{next_2nd_train[2]}"
+
+
+def safe_time(seconds: int) -> int:
+    return seconds - 40
+
+
+def hms_to_sec(h: int, m: int, s: int) -> int:
+    return int(h) * 3600 + int(m) * 60 + int(s)
+
+
+def sec_to_hms(s: int):
+    h = int(s / 3600)
+    s = s % 3600
+    m = int(s / 60)
+    s = s % 60
+    return h, m, s
