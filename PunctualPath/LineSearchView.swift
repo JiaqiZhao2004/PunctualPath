@@ -156,12 +156,10 @@ class LineSearchViewModel: ObservableObject {
             print("Error writing JSON data: \(error)")
         }
     }
-
-
 }
 
 func loadBeijingSubwayNoThrow() -> BeijingSubway {
-    let URLsPath = "/Users/royzhao/Library/CloudStorage/OneDrive-UniversityofIllinois-Urbana/Coding/PunctualPath/PunctualPath/urls.json"
+    let URLsPath = "/Users/royzhao/Library/CloudStorage/OneDrive-UniversityofIllinois-Urbana/Coding/PunctualPath/PunctualPath-app/PunctualPath/urls.json"
 //        getURLs(path: URLsPath)
     return BeijingSubway.fromJsonFile(URLsPath)!
 }
