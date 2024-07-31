@@ -1,8 +1,8 @@
 {
     "name": "BeijingSubway",
     "lines": {
-        "1号线/八通线": {
-            "native_name": "1号线/八通线",
+        "1号线八通线": {
+            "native_name": "1号线八通线",
             "station_list": [
                 "古城",
                 "八角游乐园",

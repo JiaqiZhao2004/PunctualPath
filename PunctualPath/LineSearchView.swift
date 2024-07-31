@@ -8,14 +8,13 @@
 import SwiftUI
 import UIKit
 
+
 @MainActor
 class LineSearchViewModel: ObservableObject {
     
     var beijingSubway: BeijingSubway
     
-//    @Published var imageUrl: URL?
     @Published var direction = ""
-    @Published var isFirstDirection = true
     @Published var operationTime: OperationTime = OperationTime.weekday
     
     @Published var enteredLineName = ""
@@ -31,9 +30,7 @@ class LineSearchViewModel: ObservableObject {
     @Published var station: Station? = nil
     
     @Published var timeTableUrl: TimetableURL? = nil
-    @Published var isImgAvailable: Bool = false
-    @Published var image: UIImage? = nil
-    
+
     
     init() {
         self.beijingSubway = loadBeijingSubwayNoThrow()
@@ -80,17 +77,39 @@ class LineSearchViewModel: ObservableObject {
     func switchDirection() {
         timeTableUrl?.switchURLs()
         direction = imageUrlToDirection(url:timeTableUrl?.urls.first)
-//        updateImgUrl()
+    }
+    
+    func fetch(url: String, completion: @escaping (Data) throws -> Void) {
+        print("Getting json from \(url)")
+        guard let url = URL(string: url) else {
+            return
+        }
+        Task {
+            do {
+                let (data, response) = try await URLSession.shared.data(from: url)
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    print("Invalid response")
+                    return
+                }
+                try completion(data)
+            } catch {
+                print("Download error: \(error.localizedDescription)")
+                return
+            }
+        }
     }
     
     func selectLine(lineName: String) {
-        line = beijingSubway.getLine(lineName)
-        isLineSelected = true
-        isStationSelected = false
-        direction = ""
-        enteredStationName = ""
-        enteredLineName = lineName
-        allLineStations = line?.getOrderedStations().map { $0.nativeName } ?? []
+        let basePath = "https://jiaqizhao2004.github.io/PunctualPath/api/"
+        let _: () = fetch(url: basePath + lineName + ".json") { data in
+            self.line = try JSONDecoder().decode(Line.self, from: data)
+            self.isLineSelected = true
+            self.isStationSelected = false
+            self.direction = ""
+            self.enteredStationName = ""
+            self.enteredLineName = lineName
+            self.allLineStations = self.line?.getOrderedStations().map { $0.nativeName } ?? []
+        }
     }
     
     func selectStation(stationName: String) {
@@ -102,101 +121,90 @@ class LineSearchViewModel: ObservableObject {
         direction = imageUrlToDirection(url:timeTableUrl?.urls.first)
     }
     
-//    func updateImgUrl() {
-//        guard let url: String = timeTableUrl?.urls.first else {
-//            imageUrl = nil
-//            return
-//        }
-//        imageUrl = URL(string: url)
-//    }
-//    func getImg() {
-//        guard let url = timeTableUrl else {
-//            return
-//        }
-//        isImgAvailable = false
-//        Task {
-//            guard let image = await url.getImg() else {
-//                print("Failed to fetch image.")
-//                return
-//            }
-//            self.image = image
-//            print("Fetched image successfully.")
-//            isImgAvailable = true
-//        }
-//    }
-    
-    func search() {
-//        getImg()
-        // Example usage:
-//        if let image = self.image {
-//            recognizeText(from: image) { recognizedStrings in
-//                print("Recognized strings: \(recognizedStrings)")
-//            }
-//        }
+    func currentTimeInSec() -> Int {
+        let date = Date()
+        let calendar = Calendar.current
+        
+        let h = calendar.component(.hour, from: date)
+        let m = calendar.component(.minute, from: date)
+        let s = calendar.component(.second, from: date)
+        
+        return h * 3600 + m * 60 + s
     }
     
-    func getURLs(path: String) {
-        // Fetch lines using your function
-        let lines: BeijingSubway = getLines()
-        
-        let linesDict = lines.toDict()
-
-        // Get the URL for the Documents directory
-        let fileURL = NSURL(fileURLWithPath: path) as URL
-        
-        do {
-            // Convert the dictionary to JSON data
-            let jsonData = try JSONSerialization.data(withJSONObject: linesDict, options: .prettyPrinted)
-            
-            // Write JSON data to file
-            try jsonData.write(to: fileURL)
-            
-            print("JSON data has been written to \(fileURL.path)")
-        } catch {
-            print("Error writing JSON data: \(error)")
+    func nextTrain() -> Int {
+        guard let station = station else {
+            return 0
         }
+        
+        var arrivalTimes: [Int]
+        
+        if operationTime == OperationTime.weekday {
+            arrivalTimes = station.weekdayArrivialTimes.sorted()
+        } else {
+            arrivalTimes = station.weekendArrivialTimes.sorted()
+        }
+        
+        let now = currentTimeInSec()
+        
+        var arrivalTime = 0
+        var index = 0
+        
+        while arrivalTime <= now {
+            arrivalTime = arrivalTimes[index]
+            index += 1
+        }
+        return arrivalTime
     }
+    
+}
+
+func secondsToHoursMinutesSeconds(_ seconds: Int) -> (Int, Int, Int) {
+    return (seconds / 3600, (seconds % 3600) / 60, (seconds % 3600) % 60)
 }
 
 func loadBeijingSubwayNoThrow() -> BeijingSubway {
-    let URLsPath = "/Users/royzhao/Library/CloudStorage/OneDrive-UniversityofIllinois-Urbana/Coding/PunctualPath/PunctualPath-app/PunctualPath/urls.json"
-//        getURLs(path: URLsPath)
-    return BeijingSubway.fromJsonFile(URLsPath)!
+    return BeijingSubway.fromJsonFile()!
 }
 
 struct LineSearchView: View {
     
     @StateObject private var viewModel = LineSearchViewModel()
-    @State var isImgDownloadViewPresented: Bool = false
-    
+    @State var isTimerOn: Bool = false
+    @FocusState private var isTextFieldFocused: Bool
     
     var body: some View {
-        
         VStack {
-            
-            // first textfield
-            TextField("地铁/公交线路", text: $viewModel.enteredLineName, onEditingChanged: { _ in
-                if !viewModel.isLineSelected {
-                    if viewModel.enteredLineName.isEmpty {
-                        viewModel.filteredLines = viewModel.allLines
-                    } else {
-                        viewModel.filteredLines = viewModel.allLines.filter { $0.contains(viewModel.enteredLineName) || $0.toPinyin().alphaNumeric.contains(viewModel.enteredLineName) ||
-                            $0.toPinyinAcronym().contains(viewModel.enteredLineName)
+            ZStack {
+                NormalText(text: "北京地铁")
+                    .padding(.trailing, 280)
+                    .padding(.bottom, 90)
+                    
+                TextField("1号线", text: $viewModel.enteredLineName, onEditingChanged: { _ in
+                    if !viewModel.isLineSelected {
+                        if viewModel.enteredLineName.isEmpty {
+                            viewModel.filteredLines = viewModel.allLines
+                        } else {
+                            viewModel.filteredLines = viewModel.allLines.filter { $0.contains(viewModel.enteredLineName) || $0.toPinyin().alphaNumeric.contains(viewModel.enteredLineName) ||
+                                $0.toPinyinAcronym().contains(viewModel.enteredLineName)
+                            }
                         }
                     }
-                }
-                viewModel.isLineSelected = false
-            })
-            //                .disabled(viewModel.isLineSelected)
-            .autocapitalization(.none)
-            .padding()
-            .background(viewModel.isLineSelected ? Color.gray : Color.gray.opacity(0.4))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .padding()
-            .autocorrectionDisabled()
+                    viewModel.isLineSelected = false
+                })
+                .focused($isTextFieldFocused)
+                .autocapitalization(.none)
+                .padding()
+                .background(viewModel.isLineSelected ? Color.gray : Color.gray.opacity(0.4))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .padding()
+                .autocorrectionDisabled()
+                .font(.system(size: 17))
+            }
+            .padding(.top, 20)
             
             if !viewModel.isLineSelected {
-                if viewModel.filteredLines.isEmpty {
+                if viewModel.filteredLines.isEmpty && !viewModel.enteredLineName.isEmpty {
                     Text("No lines found")
                         .foregroundColor(.gray)
                 } else if !viewModel.filteredLines.isEmpty {
@@ -206,6 +214,7 @@ struct LineSearchView: View {
                                 viewModel.selectLine(lineName: line)
                             }) {
                                 Text(line)
+                                    .font(.system(size: 17))
                             }
                         }
                     }.listStyle(.plain)
@@ -226,16 +235,17 @@ struct LineSearchView: View {
                     }
                     viewModel.isStationSelected = false
                 })
-                //                    .disabled(viewModel.isStationSelected)
+                .focused($isTextFieldFocused)
                 .autocapitalization(.none)
                 .padding()
                 .background(viewModel.isStationSelected ? Color.gray : Color.gray.opacity(0.4))
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .padding()
                 .autocorrectionDisabled()
+                .font(.system(size: 17))
                 
                 if !viewModel.isStationSelected {
-                    if viewModel.filteredStations.isEmpty {
+                    if viewModel.filteredStations.isEmpty && !viewModel.enteredStationName.isEmpty {
                         Text("No stations found")
                             .foregroundColor(.gray)
                     } else if !viewModel.filteredStations.isEmpty {
@@ -245,6 +255,7 @@ struct LineSearchView: View {
                                     viewModel.selectStation(stationName: station)
                                 }) {
                                     Text(station)
+                                        .font(.system(size: 17))
                                 }
                             }
                         }.listStyle(.plain)
@@ -252,43 +263,57 @@ struct LineSearchView: View {
                 }
             }
             
-            Text("方向：\(viewModel.direction)")
-            
-            Button(action: { viewModel.switchDirection() }) {
-                Text("切换方向")
-                    .foregroundColor(.blue)
-                    .frame(width: 70)
-                    .padding()
-                    .background(Color.gray.opacity(0.4))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-            
-            Button(action: {
-                // Perform search or action
-//                viewModel.search()
-                if viewModel.timeTableUrl != nil {
-                    isImgDownloadViewPresented = true
-                }
-            }) {
-                Text("查询")
-                    .foregroundColor(.white)
+            if !isTextFieldFocused {
+                Text("方向：\(viewModel.direction)")
+                    .font(.system(size: 17))
                     .bold()
-                    .frame(width: 70)
-                    .padding()
-                    .background(Color.blue)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                
+                Button(action: { viewModel.switchDirection() }) {
+                    Text("切换方向")
+                        .foregroundColor(.black)
+                        .font(.system(size: 17))
+                        .frame(width: 70)
+                        .bold()
+                        .padding()
+                        .background(Color.gray.opacity(0.4))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .padding(.vertical, 10)
+                }
+                
+                Button(action: {
+                    // Perform search or action
+                    //                viewModel.search()
+                    if viewModel.station != nil {
+                        isTimerOn = true
+                    }
+                    
+                }) {
+                    Text("查询")
+                        .foregroundColor(.white)
+                        .font(.system(size: 17))
+                        .bold()
+                        .frame(width: 70)
+                        .padding()
+                        .background(.black)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                Button {
+                    if let url = viewModel.timeTableUrl?.urls.first {
+                        UIApplication.shared.open(URL(string: url)!)
+                    }
+                } label: {
+                    NormalText(text: "列车时刻表原图")
+                }
             }
             
-            Text(viewModel.timeTableUrl?.urls.first ?? "")
-            
-            
         }
-        .navigationTitle("线路搜索")
-        .sheet(isPresented: $isImgDownloadViewPresented) {
-            if let url = viewModel.timeTableUrl {
-                ImageDownloadView(url: url, isImgDownloadViewPresented: $isImgDownloadViewPresented)
+        .navigationTitle("地铁准时宝")
+        .sheet(isPresented: $isTimerOn) {
+            if let station = viewModel.station {
+                TimerView(isTimerOn: $isTimerOn, nextTrain: secondsToHoursMinutesSeconds(viewModel.nextTrain()), stationName: station.nativeName, timeRemaining: viewModel.nextTrain() - viewModel.currentTimeInSec())
             }
         }
+        
     }
 }
 

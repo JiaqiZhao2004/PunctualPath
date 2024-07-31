@@ -82,12 +82,14 @@ class TimetableURL {
 }
 
 
-class Station: CustomStringConvertible {
+class Station: CustomStringConvertible, Decodable {
     var nativeName: String
     var weekdayUrls: [String] = []
     var weekendUrls: [String] = []
     var unknownUrls: [String] = []
-
+    var weekdayArrivialTimes: [Int] = []
+    var weekendArrivialTimes: [Int] = []
+    
     init(nativeName: String) {
         self.nativeName = nativeName
     }
@@ -128,29 +130,31 @@ class Station: CustomStringConvertible {
         return urls
     }
 
-    func toDict() -> [String: Any] {
-        return [
-            "native_name": nativeName,
-            "weekday_tb": weekdayUrls,
-            "weekend_tb": weekendUrls,
-            "unknown_tb": unknownUrls
-        ]
-    }
-
     static func fromDict(_ data: [String: Any]) -> Station {
         let station = Station(nativeName: data["native_name"] as! String)
         station.weekdayUrls = data["weekday_tb"] as! [String]
         station.weekendUrls = data["weekend_tb"] as! [String]
         station.unknownUrls = data["unknown_tb"] as! [String]
+//        station.weekdayArrivialTimes = data["weekday_arrival_times"] as! [Int]
+//        station.weekendArrivialTimes = data["weekend_arrival_times"] as! [Int]
         return station
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case nativeName = "native_name"
+        case weekdayUrls = "weekday_tb"
+        case weekendUrls = "weekend_tb"
+        case unknownUrls = "unknown_tb"
+        case weekdayArrivialTimes = "weekday_arrival_times"
+        case weekendArrivialTimes = "weekend_arrival_times"
     }
 }
 
 
-class Line: CustomStringConvertible {
-    var nativeName: String
-    var stationList: [String]
-    var stations: [String: Station]
+class Line: CustomStringConvertible, Decodable {
+    let nativeName: String
+    let stationList: [String]
+    let stations: [String: Station]
 
     init(nativeName: String, stationList: [String], stations: [String: Station]) {
         self.nativeName = nativeName
@@ -178,18 +182,6 @@ class Line: CustomStringConvertible {
         return Array(stations.values)
     }
 
-    func toDict() -> [String: Any] {
-        // Convert the stations dictionary to a JSON-serializable dictionary
-        var stationsDict: [String: [String: Any]] = [:]
-        for (name, station) in stations {
-            stationsDict[name] = station.toDict()
-        }
-        return [
-            "native_name": nativeName,
-            "station_list": stationList,
-            "stations": stationsDict
-        ]
-    }
 
     static func fromDict(_ data: [String: Any]) -> Line {
         // Convert the JSON-serializable dictionary back to a dictionary of Station objects
@@ -201,6 +193,12 @@ class Line: CustomStringConvertible {
             }
         }
         return Line(nativeName: data["native_name"] as! String, stationList: stationList, stations: stations)
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case nativeName = "native_name"
+        case stationList = "station_list"
+        case stations = "stations"
     }
 }
 
@@ -231,15 +229,6 @@ class BeijingSubway {
         }
     }
 
-    func toDict() -> [String: Any] {
-        let linesDict = lines.reduce(into: [String: [String: Any]]()) { result, pair in
-            result[pair.key] = pair.value.toDict()
-        }
-        return [
-            "name": name,
-            "lines": linesDict
-        ]
-    }
 
     static func fromDict(_ data: [String: Any]) -> BeijingSubway {
         var lines: [String: Line] = [:]
@@ -251,10 +240,15 @@ class BeijingSubway {
         return BeijingSubway(lines: lines)
     }
 
-    static func fromJsonFile(_ filePath: String) -> BeijingSubway? {
-        guard let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)) else {
+    static func fromJsonFile() -> BeijingSubway? {
+        guard let textFileUrl = Bundle.main.url(forResource: "urls", withExtension: "json") else {
             return nil
         }
+        guard let contents = try? String(contentsOf: textFileUrl) else {
+            return nil
+        }
+        let data: Data = Data(contents.utf8)
+        
         guard let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
             return nil
         }
