@@ -37,66 +37,84 @@ class TimetableURL(object):
         return img
 
 
+class Schedule(object):
+    def __init__(self):
+        self.url: str | None = None
+        self.arrival_times: list[int] | None = None
+
+    def set_arrival_times(self, arrival_times: list[int]) -> None:
+        self.arrival_times = arrival_times
+
+    def add_url(self, timetable_url: str) -> OperationTime or None:
+        self.url = timetable_url
+        if '工作日' in timetable_url:
+            return OperationTime.WEEKDAY
+        if '双休日' in timetable_url:
+            return OperationTime.WEEKEND
+        if '工作日' not in timetable_url and '双休日' not in timetable_url:
+            return None
+
+    def to_dict(self):
+        return {
+            "url": self.url,
+            "arrival_times": self.arrival_times
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        schedule = cls()
+        schedule.url = data["url"]
+        if "arrival_times" in data:
+            schedule.arrival_times = data["arrival_times"]
+        return schedule
+
+
 class Station(object):
     def __init__(self, native_name: str):
         self.native_name = native_name
-        self.weekday_urls: list[str] = []
-        self.weekend_urls: list[str] = []
-        self.unknown_urls: list[str] = []
-        self.weekday_arrival_times: list[str] = []
-        self.weekend_arrival_times: list[str] = []
+        self.weekday_schedules: list[Schedule] = []
+        self.weekend_schedules: list[Schedule] = []
+        self.unknown_schedules: list[Schedule] = []
 
     def __str__(self):
         return self.native_name
 
-    def add_arrival_times(self, arrival_times: list[str], operation_time: OperationTime) -> None:
-        if operation_time is OperationTime.WEEKDAY:
-            self.weekday_arrival_times.extend(arrival_times)
-        elif operation_time is OperationTime.WEEKEND:
-            self.weekend_arrival_times.extend(arrival_times)
-
-    def add_url(self, timetable_url: str) -> OperationTime or None:
-        if '工作日' in timetable_url:
-            self.weekday_urls.append(timetable_url)
-            return OperationTime.WEEKDAY
-        if '双休日' in timetable_url:
-            self.weekend_urls.append(timetable_url)
-            return OperationTime.WEEKEND
-        if '工作日' not in timetable_url and '双休日' not in timetable_url:
-            self.unknown_urls.append(timetable_url)
-            return None
+    def add_schedule(self, schedule: Schedule, operation_time: OperationTime | None) -> None:
+        match operation_time:
+            case OperationTime.WEEKDAY:
+                self.weekday_schedules.append(schedule)
+            case OperationTime.WEEKEND:
+                self.weekend_schedules.append(schedule)
+            case None:
+                self.unknown_schedules.append(schedule)
 
     def get_tb_urls(self, time: OperationTime):
         urls = TimetableURL()
         if time == OperationTime.WEEKDAY:
-            for weekday_url in self.weekday_urls:
-                urls.add_url(weekday_url)
+            for schedule in self.weekday_schedules:
+                urls.add_url(schedule.url)
         elif time == OperationTime.WEEKEND:
-            for weekend_url in self.weekend_urls:
-                urls.add_url(weekend_url)
+            for schedule in self.weekend_schedules:
+                urls.add_url(schedule.url)
         if len(urls.urls) == 0:
-            for unknown_url in self.unknown_urls:
-                urls.add_url(unknown_url)
+            for schedule in self.unknown_schedules:
+                urls.add_url(schedule.url)
         return urls
 
     def to_dict(self):
         return {
             'native_name': self.native_name,
-            'weekday_tb': self.weekday_urls,
-            'weekend_tb': self.weekend_urls,
-            'unknown_tb': self.unknown_urls,
-            'weekday_arrival_times': self.weekday_arrival_times,
-            'weekend_arrival_times': self.weekend_arrival_times,
+            'weekday_schedules': [schedule.to_dict() for schedule in self.weekday_schedules],
+            'weekend_schedules': [schedule.to_dict() for schedule in self.weekend_schedules],
+            'unknown_schedules': [schedule.to_dict() for schedule in self.unknown_schedules]
         }
 
     @classmethod
     def from_dict(cls, data):
         station = cls(data['native_name'])
-        station.weekday_urls = data['weekday_tb']
-        station.weekend_urls = data['weekend_tb']
-        station.unknown_urls = data['unknown_tb']
-        station.weekday_arrival_times = data['weekday_arrival_times']
-        station.weekend_arrival_times = data['weekend_arrival_times']
+        station.weekday_schedules = [Schedule.from_dict(schedule) for schedule in data['weekday_schedules']]
+        station.weekend_schedules = [Schedule.from_dict(schedule) for schedule in data['weekend_schedules']]
+        station.unknown_schedules = [Schedule.from_dict(schedule) for schedule in data['weekend_schedules']]
         return station
 
 
@@ -191,7 +209,7 @@ class TimeTable(object):
     def __str__(self):
         return "Timetable:\n" + '\n'.join(str(row) for row in self.rows)
 
-    def to_list(self) -> list[int]:
+    def to_list_int(self) -> list[int]:
         schedule: list[int] = []
         for row in self.rows:
             for minute in row.minutes:
@@ -209,7 +227,7 @@ class TimeTable(object):
         if h is None or m is None:
             h, m, s = get_current_time()
         now_sec: int = hms_to_sec(h, m, s)
-        schedule: list[int] = self.to_list()
+        schedule: list[int] = self.to_list_int()
         next_train = None
         next_2nd_train = None
         for i, timestamp in enumerate(schedule):
@@ -257,13 +275,13 @@ def get_station_timetables_url(station_url, root_path="https://www.bjsubway.com"
     return images_url
 
 
-def get_arrival_times(url: str) -> list[str]:
+def get_timetable(url: str):
     img = Image.open(requests.get(url, stream=True).raw)
     table = load_timetable(img, filter=True, verbose=False)
-    return table.to_list_str()
+    return table
 
 
-def get_lines() -> BeijingSubway:
+def get_lines(load_arrival_times=False, index_begin=0, index_end=-1, print_timetables=True) -> BeijingSubway:
     url = "https://www.bjsubway.com/station/xltcx/line1/"
     r = requests.get(url)
     r.encoding = r.apparent_encoding
@@ -272,7 +290,7 @@ def get_lines() -> BeijingSubway:
     lines = BeijingSubway()
 
     # Find all line elements
-    line_elements = soup.find_all('div', class_='line_name')[0:2]
+    line_elements = soup.find_all('div', class_='line_name')[index_begin:index_end]
 
     # Iterate through line elements
     for line_elem in tqdm(line_elements):
@@ -294,16 +312,23 @@ def get_lines() -> BeijingSubway:
                 station_href = a_element['href']
                 station_timetables_url = get_station_timetables_url(station_href)
                 for url in station_timetables_url:
-                    operation_time = station.add_url(url)
-                    if operation_time is None:
-                        continue
-                    try:
-                        arrival_times = get_arrival_times(url)
-                        station.add_arrival_times(arrival_times, operation_time)
-                    except Exception as e:
-                        print(e, f"{station_native_name}\t{url}")
+                    schedule = Schedule()
+                    operation_time = schedule.add_url(url)
+                    if load_arrival_times:
+                        try:
+                            timetable = get_timetable(url)
+                            if print_timetables:
+                                print(station_native_name)
+                                print(url)
+                                print(timetable)
+                            schedule.set_arrival_times(timetable.to_list_int())
+                        except Exception as e:
+                            print(e, f"{station_native_name}\t{url}")
+                    station.add_schedule(schedule, operation_time)
+
             stations[station_native_name] = station
             next_elem = next_elem.find_next_sibling()
+            print("Completed station " + station_native_name)
 
         lines[line_native_name] = Line(native_name=line_native_name, station_list=station_list,
                                        stations=stations)
@@ -468,14 +493,16 @@ def load_timetable(img: Image.Image, filter=True, verbose=False) -> TimeTable:
                     h += 1
                     if h == 24:
                         h = 0
-                    print(f"Hour recognized incorrectly at {h} ({h_raw})")
+                    if verbose:
+                        print(f"Hour recognized incorrectly at {h} ({h_raw})")
             else:
                 h = h_raw
         except Exception as e:
             h += 1
             if h == 24:
                 h = 0
-            print(f"Hour not recognized at {h}")
+            if verbose:
+                print(f"Hour not recognized at {h}")
 
         row = Row(h)
 
@@ -499,13 +526,13 @@ def load_timetable(img: Image.Image, filter=True, verbose=False) -> TimeTable:
         for result in m_result:
             m += result[0] + ' '
         m = m.strip()
-        m_formatted = format_minutes(m)
+        m_formatted = format_minutes(m, verbose=verbose)
         row.minutes = m_formatted
         table.add_row(row)
     return table
 
 
-def format_minutes(m: str) -> list[int]:
+def format_minutes(m: str, verbose=False) -> list[int]:
     m = m.replace('Z', '2').replace('S', '5')
     m = ''.join(c if c.isdigit() else ' ' for c in m).replace("  ", " ")
     m_list = m.split(' ')
@@ -516,7 +543,7 @@ def format_minutes(m: str) -> list[int]:
 
         num_int = int(num_str)
 
-        if num_int > 59 and num_int < 1000:
+        if 100 < num_int < 1000:
             rm_r = int(num_str[0:2])
             rm_l = int(num_str[1:3])
 
@@ -532,9 +559,10 @@ def format_minutes(m: str) -> list[int]:
                     next_m = int(m_list[i + 1])
                 except ValueError:
                     next_m = prior_m + 10
-                    print(f"Inaccurate result from parsing {num_str}")
+                    if verbose:
+                        print(f"Inaccurate result from parsing {num_str}")
 
-            midpoint = (next_m - prior_m) / 2
+            midpoint = (next_m + prior_m) / 2
 
             if not prior_m < rm_r < next_m and prior_m < rm_l < next_m:
                 num_int = rm_l
@@ -546,8 +574,9 @@ def format_minutes(m: str) -> list[int]:
                 else:
                     num_int = rm_l
             else:
-                num_int = midpoint
-                print("Failed to parse minute data {}, using midpoint value {}".format(num_str, midpoint))
+                num_int = int(midpoint)
+                if verbose:
+                    print("Failed to parse minute data {}, using midpoint value {} -> {} <- {}".format(num_str, prior_m, midpoint, next_m))
 
         if num_int not in new_list:
             new_list.append(num_int)
