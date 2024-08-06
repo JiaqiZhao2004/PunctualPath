@@ -13,9 +13,20 @@ func getDayOfWeek() -> String {
 
     let components = calendar.dateComponents([.year, .month, .day, .weekday], from: currentDate)
     
-    let weekday: Int = components.weekday ?? 1
+    var weekday: Int = components.weekday ?? 1
+    
+    // if time is 12am to 1am, still see it as the last day
+    if getCurrentTimeInSec() < 3600 {
+        if weekday == 1 {
+            weekday = 7
+        } else {
+            weekday -= 1
+        }
+    }
+    
     let weekdaySymbols = calendar.weekdaySymbols
     let weekdayName = weekdaySymbols[weekday - 1]
+    
     return weekdayName
 }
 
@@ -31,7 +42,11 @@ func getCurrentTimeInSec() -> Int {
     let date = Date()
     let calendar = Calendar.current
     
-    let h = calendar.component(.hour, from: date)
+    var h = calendar.component(.hour, from: date)
+    // if time is 12am to 1am, still see it as the last day
+    if h < 1 {
+        h += 24
+    }
     let m = calendar.component(.minute, from: date)
     let s = calendar.component(.second, from: date)
     
@@ -39,6 +54,10 @@ func getCurrentTimeInSec() -> Int {
 }
 
 func secToHMS(_ seconds: Int) -> (Int, Int, Int) {
+    var seconds = seconds
+    if seconds >= 86400 {
+        seconds -= 86400
+    }
     return (seconds / 3600, (seconds % 3600) / 60, (seconds % 3600) % 60)
 }
 

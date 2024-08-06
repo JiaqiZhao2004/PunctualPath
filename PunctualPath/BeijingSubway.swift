@@ -116,6 +116,13 @@ class Schedule: CustomStringConvertible, Decodable {
     init(url: String, arrivalTimes: [Int]) {
         self.url = url
         self.arrivalTimes = arrivalTimes
+        
+        // for trains after 12 a.m.
+        for (index, value) in self.arrivalTimes.enumerated() {
+            if value < 3600 {
+                self.arrivalTimes[index] += 86400
+            }
+        }
     }
     
     enum CodingKeys: String, CodingKey {
@@ -130,6 +137,13 @@ class Schedule: CustomStringConvertible, Decodable {
         if debug {print(url)}
         arrivalTimes = try container.decode([Int].self, forKey: .arrivalTimes)
         if debug {print(arrivalTimes[0])}
+        
+        // for trains after 12 a.m.
+        for (index, value) in arrivalTimes.enumerated() {
+            if value < 3600 {
+                arrivalTimes[index] += 86400
+            }
+        }
     }
     
 //    func setArrivalTimes(arrivalTimes: [Int]) -> Void {
