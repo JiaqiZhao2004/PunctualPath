@@ -19,7 +19,6 @@ struct TimerView: View {
     @Binding var isTimerOn: Bool
     let stationName: String
     let scheduleBook: ScheduleBook
-//    let nextTrain: (Int, Int, Int)
     
     @State var firstTrainTimer: Int = -1
     @State var secondTrainTimer: Int = -1
@@ -44,7 +43,48 @@ struct TimerView: View {
     }
     
     var body: some View {
-        ZStack {
+        VStack {
+            Spacer(minLength: 150)
+            NormalText(text:"如下计划的列车")
+                .padding(.top, 55)
+            CapsuleText(text: HMSToString(time: secToHMS( scheduleBook.firstScheduleNextTrain()), mode: .HM))
+            NormalText(text: "将于")
+            Button {
+                countdownInSeconds.toggle()
+            } label: {
+                CapsuleText(text: countdownInSeconds ? "\(countdownTime())" : HMSToString(time: secToHMS(countdownTime())))
+            }
+            let caption = switch countdownTarget {
+            case .announcement:
+                "准备进入"
+            case .arrival:
+                "抵达"
+            case .departure:
+                "离开"
+            }
+            NormalText(text: (countdownInSeconds ? "秒" : "") + "后" + caption)
+            Text(stationName)
+                .font(.title)
+                .bold()
+                .foregroundStyle(.black)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 5)
+            //                Button {
+            //                    cancel()
+            //                } label: {
+            //                    NormalText(text: "返回")
+            //                        .padding(.top, 50)
+            //                }
+            
+            Button {
+                UIApplication.shared.open(URL(string: scheduleBook.firstScheduleURL())!)
+            } label: {
+                NormalText(text: "列车时刻表原图")
+            }
+            .offset(x: 0, y: 35)
+            
+            Spacer()
+            
             HStack {
                 VStack {
                     NormalText(text: "-60s")
@@ -86,48 +126,10 @@ struct TimerView: View {
                     NormalText(text: countdownInSeconds ? "\(max(0, secondTrainTimer))s" : HMSToString(time: secToHMS(max(0, secondTrainTimer))))
                         .offset(x: 0, y: -15)
                 }
-            }.offset(x: 0, y: 330)
-            VStack {
-                NormalText(text:"如下计划的列车")
-                    .padding(.top, 55)
-                CapsuleText(text: HMSToString(time: secToHMS( scheduleBook.firstScheduleNextTrain()), mode: .HM))
-                NormalText(text: "将于")
-                Button {
-                    countdownInSeconds.toggle()
-                } label: {
-                    CapsuleText(text: countdownInSeconds ? "\(countdownTime())" : HMSToString(time: secToHMS(countdownTime())))
-                }
-                let caption = switch countdownTarget {
-                case .announcement:
-                    "准备进入"
-                case .arrival:
-                    "抵达"
-                case .departure:
-                    "离开"
-                }
-                NormalText(text: (countdownInSeconds ? "秒" : "") + "后" + caption)
-                Text(stationName)
-                    .font(.title)
-                    .bold()
-                    .foregroundStyle(.black)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 5)
-                //                Button {
-                //                    cancel()
-                //                } label: {
-                //                    NormalText(text: "返回")
-                //                        .padding(.top, 50)
-                //                }
-                
-                Button {
-                    UIApplication.shared.open(URL(string: scheduleBook.firstScheduleURL())!)
-                } label: {
-                    NormalText(text: "列车时刻表原图")
-                }
-                .offset(x: 0, y: 25)
-            }.padding(.bottom, 90)
-            
-        }.onReceive(timer) { time in
+            }
+            .offset(x: 0, y: 15)
+        }
+        .onReceive(timer) { time in
             firstTrainTimer = scheduleBook.firstScheduleNextTrain() - getCurrentTimeInSec()
             secondTrainTimer = scheduleBook.firstScheduleNextTrain(at: getCurrentTimeInSec() + firstTrainTimer + 1) - getCurrentTimeInSec()
         }
