@@ -29,7 +29,7 @@ class LineSearchViewModel: ObservableObject {
     @Published var filteredStations: [String] = []
     @Published var station: Station? = nil
     
-    @Published var stationSchedule: StationSchedule? = nil
+    @Published var scheduleBook: ScheduleBook? = nil
 
     
     init() {
@@ -37,27 +37,7 @@ class LineSearchViewModel: ObservableObject {
         self.allLines = self.beijingSubway.getLines().map { $0.nativeName }
     }
     
-    func getOperationTime() -> OperationTime {
-        let currentDate = Date()
-
-        // Get the current calendar
-        let calendar = Calendar.current
-
-        // Get the components of the current date
-        let components = calendar.dateComponents([.year, .month, .day, .weekday], from: currentDate)
-        
-        let weekday: Int = components.weekday ?? 1
-        
-        // Get the name of the weekday
-        let weekdaySymbols = calendar.weekdaySymbols
-        let weekdayName = weekdaySymbols[weekday - 1]
-        if (weekdayName == "Saturday" || weekdayName == "Sunday") {
-            return OperationTime.weekend
-        }
-        return OperationTime.weekday
-    }
-    
-    func imageUrlToDirection(url: String?) -> String {
+    func trainDirectionFromURL(url: String?) -> String {
         guard let str = url else {
             return "数据获取错误"
         }
@@ -75,8 +55,8 @@ class LineSearchViewModel: ObservableObject {
     }
     
     func switchDirection() {
-        stationSchedule?.switchSchedules()
-        direction = imageUrlToDirection(url:stationSchedule?.firstURL())
+        scheduleBook?.switchSchedules()
+        direction = trainDirectionFromURL(url:scheduleBook?.firstScheduleURL())
     }
     
     func fetch(url: String, completion: @escaping (Data) throws -> Void) {
@@ -118,46 +98,9 @@ class LineSearchViewModel: ObservableObject {
         isStationSelected = true
         enteredStationName = stationName
         operationTime = getOperationTime()
-        stationSchedule = station?.getSchedules(time: operationTime)
-        direction = imageUrlToDirection(url:stationSchedule?.firstURL())
+        scheduleBook = station?.getSchedules(time: operationTime)
+        direction = trainDirectionFromURL(url:scheduleBook?.firstScheduleURL())
     }
-    
-    func currentTimeInSec() -> Int {
-        let date = Date()
-        let calendar = Calendar.current
-        
-        let h = calendar.component(.hour, from: date)
-        let m = calendar.component(.minute, from: date)
-        let s = calendar.component(.second, from: date)
-        
-        return h * 3600 + m * 60 + s
-    }
-    
-    func nextTrain() -> Int {
-        guard station != nil else {
-            return 0
-        }
-        
-        guard let arrivalTimes = stationSchedule?.firstArrivalTimes() else {
-            return -1
-        }
-        
-        let now = currentTimeInSec()
-        
-        var arrivalTime = 0
-        var index = 0
-        
-        while arrivalTime <= now {
-            arrivalTime = arrivalTimes[index]
-            index += 1
-        }
-        return arrivalTime
-    }
-    
-}
-
-func secondsToHoursMinutesSeconds(_ seconds: Int) -> (Int, Int, Int) {
-    return (seconds / 3600, (seconds % 3600) / 60, (seconds % 3600) % 60)
 }
 
 func loadBeijingSubwayNoThrow() -> BeijingSubway {
@@ -295,7 +238,7 @@ struct LineSearchView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 Button {
-                    if let url = viewModel.stationSchedule?.firstURL() {
+                    if let url = viewModel.scheduleBook?.firstScheduleURL() {
                         UIApplication.shared.open(URL(string: url)!)
                     }
                 } label: {
@@ -306,8 +249,8 @@ struct LineSearchView: View {
         }
         .navigationTitle("地铁准时宝")
         .sheet(isPresented: $isTimerOn) {
-            if let station = viewModel.station {
-                TimerView(isTimerOn: $isTimerOn, stationSchedule: $viewModel.stationSchedule, nextTrain: secondsToHoursMinutesSeconds(viewModel.nextTrain()), stationName: station.nativeName, timeRemaining: viewModel.nextTrain() - viewModel.currentTimeInSec())
+            if let scheduleBook = viewModel.scheduleBook {
+                TimerView(isTimerOn: $isTimerOn, stationName: viewModel.station?.nativeName ?? "站名错误", scheduleBook: scheduleBook)
             }
         }
         

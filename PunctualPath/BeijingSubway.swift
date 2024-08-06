@@ -15,7 +15,7 @@ enum OperationTime {
 }
 
 
-class StationSchedule {
+class ScheduleBook {
     var schedules: [Schedule] = []
     
     init(schedules: [Schedule]) {
@@ -31,12 +31,27 @@ class StationSchedule {
         schedules.append(schedules.removeFirst())
     }
     
-    func firstURL() -> String {
+    func firstScheduleURL() -> String {
         return schedules.first?.url ?? ""
     }
     
-    func firstArrivalTimes() -> [Int] {
+    func firstScheduleArrivalTimes() -> [Int] {
         return schedules.first?.arrivalTimes.sorted() ?? []
+    }
+    
+    func firstScheduleNextTrain(at: Int = getCurrentTimeInSec()) -> Int {
+        let arrivalTimes = firstScheduleArrivalTimes()
+        var arrivalTime = 0
+        var index = 0
+        
+        while arrivalTime <= at {
+            if index == arrivalTimes.count {
+                return -1
+            }
+            arrivalTime = arrivalTimes[index]
+            index += 1
+        }
+        return arrivalTime
     }
 
     func printURLs() {
@@ -44,6 +59,7 @@ class StationSchedule {
             print(schedule.url)
         }
     }
+    
 
     func getImg(completion: @escaping (UIImage?) -> Void) {
         guard !schedules.isEmpty else {
@@ -187,7 +203,7 @@ class Station: CustomStringConvertible, Decodable {
         }
     }
     
-    func getSchedules(time: OperationTime) -> StationSchedule {
+    func getSchedules(time: OperationTime) -> ScheduleBook {
         var schedules: [Schedule] = []
         if time == .weekday {
             schedules = weekdaySchedules
@@ -198,7 +214,7 @@ class Station: CustomStringConvertible, Decodable {
         if schedules.isEmpty {
             schedules = unknownSchedules
         }
-        return StationSchedule(schedules: schedules)
+        return ScheduleBook(schedules: schedules)
     }
     
 

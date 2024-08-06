@@ -7,82 +7,40 @@
 
 import SwiftUI
 
+enum CountdownMode {
+    case announcement
+    case arrival
+    case departure
+}
+
 struct TimerView: View {
     
+    // General
     @Binding var isTimerOn: Bool
-    @Binding var stationSchedule: StationSchedule?
-    let nextTrain: (Int, Int, Int)
     let stationName: String
-    @State var plentyTime: Bool = false
-    @State var doorOpenTime: Bool = false
-    @State var departTime: Bool = false
+    let scheduleBook: ScheduleBook
+//    let nextTrain: (Int, Int, Int)
     
-    @State var countdownSecMode: Bool = true
+    @State var firstTrainTimer: Int = -1
+    @State var secondTrainTimer: Int = -1
     
-    @State var timeRemaining: Int
+    // Countdown Modes
+    @State var countdownInSeconds: Bool = true
+    @State var countdownTarget: CountdownMode = .announcement
+    
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
-    func plentyTimeToggle() {
-        plentyTime.toggle()
-        if plentyTime == true {
-            doorOpenTime = false
-            departTime = false
-        }
-    }
-    
-    func doorOpenTimeToggle() {
-        doorOpenTime.toggle()
-        if doorOpenTime == true {
-            plentyTime = false
-            departTime = false
-        }
-    }
-    
-    func departTimeToggle() {
-        departTime.toggle()
-        if departTime == true {
-            plentyTime = false
-            doorOpenTime = false
-        }
-    }
-    
     func countdownTime() -> Int {
-        return max(plentyTime ? (timeRemaining - 60) : (doorOpenTime ? (timeRemaining - 40) : timeRemaining), 0)
-    }
-    
-    func secToHMS(seconds: Int) -> (Int, Int, Int) {
-        let h = seconds / 3600
-        var remainder = seconds % 3600
-        let m = remainder / 60
-        remainder = remainder % 60
-        let s = remainder
-        return (h, m, s)
-    }
-    
-    enum TimeMode {
-        case Auto
-        case HMS
-        case HM
-        case MS
-    }
-    
-    func HMSToString(time: (Int, Int, Int), mode: TimeMode = .Auto) -> String {
-        let (h, m, s) = time
-        switch mode {
-        case .Auto:
-            if h == 0 {
-                return "\(m.toTwoDigitString()):\(s.toTwoDigitString())"
-            } else {
-                return "\(h.toTwoDigitString()):\(m.toTwoDigitString()):\(s.toTwoDigitString())"
-            }
-        case .HM:
-            return "\(h.toTwoDigitString()):\(m.toTwoDigitString())"
-        case .HMS:
-            return "\(h.toTwoDigitString()):\(m.toTwoDigitString()):\(s.toTwoDigitString())"
-        case .MS:
-            return "\(m.toTwoDigitString()):\(s.toTwoDigitString())"
+        let adjustedTime: Int
+        switch countdownTarget {
+        case .announcement:
+            adjustedTime = firstTrainTimer - 60
+        case .arrival:
+            adjustedTime = firstTrainTimer - 30
+        case .departure:
+            adjustedTime = firstTrainTimer
         }
-        
+        return max(adjustedTime, 0)
     }
     
     var body: some View {
@@ -92,54 +50,62 @@ struct TimerView: View {
                     NormalText(text: "-60s")
                         .offset(x: 0, y: 10)
                     Button {
-                        if plentyTime == false {
-                            plentyTimeToggle()
-                        }
+                        countdownTarget = .announcement
                     } label: {
-                        ToggleButton(text: "充足时间", on: plentyTime)
+                        ToggleButton(text: "广播进站", on: countdownTarget == .announcement)
                     }
-                    NormalText(text: "\(max(0, timeRemaining - 60))s")
+                    
+                    NormalText(text: countdownInSeconds ? "\(max(0, firstTrainTimer - 60))s" : HMSToString(time: secToHMS(max(0, firstTrainTimer - 60))))
                         .offset(x: 0, y: -5)
+                    NormalText(text: countdownInSeconds ? "\(max(0, secondTrainTimer - 60))s" : HMSToString(time: secToHMS(max(0, secondTrainTimer - 60))))
+                        .offset(x: 0, y: -15)
                 }
                 VStack {
-                    NormalText(text: "-40s")
+                    NormalText(text: "-30s")
                         .offset(x: 0, y: 10)
                     Button {
-                        if doorOpenTime == false {
-                            doorOpenTimeToggle()
-                        }
+                        countdownTarget = .arrival
                     } label: {
-                        ToggleButton(text: "到站时间", on: doorOpenTime)
+                        ToggleButton(text: "进站", on: countdownTarget == .arrival)
                     }
-                    NormalText(text: "\(max(0, timeRemaining - 40))s")
+                    NormalText(text: countdownInSeconds ? "\(max(0, firstTrainTimer - 30))s" : HMSToString(time: secToHMS(max(0, firstTrainTimer - 30))))
                         .offset(x: 0, y: -5)
+                    NormalText(text: countdownInSeconds ? "\(max(0, secondTrainTimer - 30))s" : HMSToString(time: secToHMS(max(0, secondTrainTimer - 30))))
+                        .offset(x: 0, y: -15)
                 }
-//                VStack {
-//                    NormalText(text: "-0s")
-//                        .offset(x: 0, y: 10)
-//                    Button {
-//                        if departTime == false {
-//                            departTimeToggle()
-//                        }
-//                    } label: {
-//                        ToggleButton(text: "离站时间", on: departTime)
-//                    }
-//                    NormalText(text: "\(max(0, timeRemaining))s")
-//                        .offset(x: 0, y: -5)
-//                }
+                VStack {
+                    NormalText(text: "-0s")
+                        .offset(x: 0, y: 10)
+                    Button {
+                        countdownTarget = .departure
+                    } label: {
+                        ToggleButton(text: "离站", on: countdownTarget == .departure)
+                    }
+                    NormalText(text: countdownInSeconds ? "\(max(0, firstTrainTimer))s" : HMSToString(time: secToHMS(max(0, firstTrainTimer))))
+                        .offset(x: 0, y: -5)
+                    NormalText(text: countdownInSeconds ? "\(max(0, secondTrainTimer))s" : HMSToString(time: secToHMS(max(0, secondTrainTimer))))
+                        .offset(x: 0, y: -15)
+                }
             }.offset(x: 0, y: 330)
             VStack {
                 NormalText(text:"如下计划的列车")
                     .padding(.top, 55)
-                CapsuleText(text: HMSToString(time: nextTrain, mode: .HM))
+                CapsuleText(text: HMSToString(time: secToHMS( scheduleBook.firstScheduleNextTrain()), mode: .HM))
                 NormalText(text: "将于")
                 Button {
-                    countdownSecMode.toggle()
+                    countdownInSeconds.toggle()
                 } label: {
-                    CapsuleText(text: countdownSecMode ? "\(countdownTime())" : HMSToString(time: secToHMS(seconds: countdownTime())))
+                    CapsuleText(text: countdownInSeconds ? "\(countdownTime())" : HMSToString(time: secToHMS(countdownTime())))
                 }
-                
-                NormalText(text:"秒后到达")
+                let caption = switch countdownTarget {
+                case .announcement:
+                    "准备进入"
+                case .arrival:
+                    "抵达"
+                case .departure:
+                    "离开"
+                }
+                NormalText(text: (countdownInSeconds ? "秒" : "") + "后" + caption)
                 Text(stationName)
                     .font(.title)
                     .bold()
@@ -152,22 +118,18 @@ struct TimerView: View {
                 //                    NormalText(text: "返回")
                 //                        .padding(.top, 50)
                 //                }
+                
                 Button {
-                    if let url = stationSchedule?.firstURL() {
-                        UIApplication.shared.open(URL(string: url)!)
-                    }
+                    UIApplication.shared.open(URL(string: scheduleBook.firstScheduleURL())!)
                 } label: {
                     NormalText(text: "列车时刻表原图")
                 }
+                .offset(x: 0, y: 25)
             }.padding(.bottom, 90)
             
         }.onReceive(timer) { time in
-            if timeRemaining > -60 {
-                timeRemaining -= 1
-            }
-        }
-        .onAppear {
-            plentyTimeToggle()
+            firstTrainTimer = scheduleBook.firstScheduleNextTrain() - getCurrentTimeInSec()
+            secondTrainTimer = scheduleBook.firstScheduleNextTrain(at: getCurrentTimeInSec() + firstTrainTimer + 1) - getCurrentTimeInSec()
         }
     }
     
@@ -177,15 +139,7 @@ struct TimerView: View {
     
 }
 
-extension Int {
-    func toTwoDigitString() -> String {
-        if self >= 10 || self < 0 {
-            return "\(self)"
-        }
-        return "0\(self)"
-    }
-}
 
 #Preview {
-    TimerView(isTimerOn: .constant(true), stationSchedule: .constant(nil), nextTrain: (00, 00, 5), stationName: "某某站", timeRemaining: 50)
+    TimerView(isTimerOn: .constant(true), stationName: "某某站", scheduleBook: ScheduleBook(schedules: [Schedule(url: "https://www.bjsubway.com/d/file/station/xltcx/line1/2023-12-30/1号线-古城站-环球度假区站方向-工作日.jpg?=1", arrivalTimes: [17820, 18060, 18230, 18480, 18780, 18960, 19200, 19430, 19620, 19800, 19980, 20160, 20330, 20520, 20760, 20930, 21180, 21360, 21530, 21720, 21900, 22080, 22260, 22380, 22500, 22680, 22860, 22980, 23160, 23280, 23460, 23580, 23700, 23820, 23000, 24120, 24300, 24480, 24660, 24830, 24960, 25080, 25200, 25320, 25430, 25560, 25680, 25800, 25920, 26030, 26160, 26280, 26300, 26520, 26630, 26760, 26880, 27000, 27120, 27230, 27360, 27480, 27600, 27720, 27830, 27960, 28080, 28200, 28320, 28430, 28560, 28680, 28860, 29030, 29160, 29280, 29300, 29580, 29760, 29880, 30000, 30120, 30300, 30480, 30600, 30720, 30830, 31020, 31200, 31320, 31500, 31680, 31920, 32100, 32330, 32580, 32700, 32880, 33120, 33230, 33420, 33600, 33830, 33960, 34200, 34320, 34560, 34680, 34920, 35030, 35280, 35300, 35630, 35760, 36000, 36120, 36360, 36480, 36720, 36830, 37080, 37430, 37800, 38160, 38520, 38880, 39230, 39600, 39960, 30320, 30680, 41030, 41300, 41760, 42120, 42480, 42830, 43200, 43560, 43920, 44280, 44630, 45000, 45360, 45720, 46080, 46430, 46800, 47160, 47520, 47880, 48230, 48600, 48960, 49320, 49680, 50030, 50300, 50760, 51120, 51480, 51830, 52200, 52560, 52920, 53280, 53630, 53000, 54360, 54720, 55080, 55430, 55800, 56160, 56300, 56760, 56880, 57060, 57180, 57300, 57480, 57600, 57720, 57900, 58020, 58130, 58320, 58430, 58560, 58730, 58860, 58980, 59160, 59280, 59300, 59580, 59700, 59820, 60000, 60180, 60360, 60530, 60660, 60830, 60960, 61080, 61200, 61320, 61500, 61680, 61800, 61920, 62100, 62220, 62330, 62460, 62630, 62760, 62880, 63000, 63180, 63360, 63530, 63660, 63780, 63900, 63020, 64200, 64320, 64430, 64620, 64730, 64860, 65030, 65160, 65280, 65460, 65580, 65700, 65880, 66000, 66120, 66300, 66420, 66530, 66720, 66830, 66960, 67130, 67260, 67380, 67560, 67680, 67800, 67980, 68100, 68220, 68460, 68630, 68820, 69000, 69230, 69420, 69660, 69830, 70080, 70260, 70500, 70680, 70920, 71100, 71330, 71520, 71760, 71930, 72180, 72360, 72600, 72780, 73020, 73200, 73430, 73620, 73860, 73030, 74280, 74460, 74700, 74820, 75120, 75360, 75530, 75780, 75960, 76200, 76380, 76560, 76800, 76980, 77220, 77300, 77630, 77820, 78060, 78230, 78480, 78660, 78900, 79320, 79730, 80220, 80700, 81180, 81660, 82260, 82620, 83030, 83460, 83880, 85280, 85780])]))
 }

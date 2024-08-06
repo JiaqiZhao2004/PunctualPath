@@ -19,6 +19,7 @@
 		CFDB01C12C58E35600584FC4 /* LargeCapsuleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFDB01C02C58E35600584FC4 /* LargeCapsuleText.swift */; };
 		CFDB01C32C5B21AB00584FC4 /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = CFDB01C22C5B21AB00584FC4 /* urls.json */; };
 		CFDB01C62C62524500584FC4 /* ToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFDB01C52C62524500584FC4 /* ToggleButton.swift */; };
+		CFDB01C82C625C3600584FC4 /* TimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFDB01C72C625C3600584FC4 /* TimeUtils.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		CFDB01C02C58E35600584FC4 /* LargeCapsuleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeCapsuleText.swift; sourceTree = "<group>"; };
 		CFDB01C22C5B21AB00584FC4 /* urls.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = urls.json; sourceTree = "<group>"; };
 		CFDB01C52C62524500584FC4 /* ToggleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleButton.swift; sourceTree = "<group>"; };
+		CFDB01C72C625C3600584FC4 /* TimeUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeUtils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +75,7 @@
 				CFDB01C22C5B21AB00584FC4 /* urls.json */,
 				CFDB01C42C5B21B900584FC4 /* Elements */,
 				CF433D162C1C216B00FF0E7F /* LineSearchView.swift */,
+				CFDB01C72C625C3600584FC4 /* TimeUtils.swift */,
 				CF19AD692C16EF3B004BCA08 /* Assets.xcassets */,
 				CF19AD6B2C16EF3B004BCA08 /* Preview Content */,
 			);
@@ -179,6 +182,7 @@
 				CF19AD682C16EF39004BCA08 /* TimerView.swift in Sources */,
 				CFAA15252C2AFA950080817F /* BeijingSubway.swift in Sources */,
 				CF19AD662C16EF39004BCA08 /* PunctualPathApp.swift in Sources */,
+				CFDB01C82C625C3600584FC4 /* TimeUtils.swift in Sources */,
 				CFDB01C62C62524500584FC4 /* ToggleButton.swift in Sources */,
 				CFDB01C12C58E35600584FC4 /* LargeCapsuleText.swift in Sources */,
 				CF433D172C1C216B00FF0E7F /* LineSearchView.swift in Sources */,
