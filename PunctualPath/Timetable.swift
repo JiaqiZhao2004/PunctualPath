@@ -144,7 +144,7 @@ func getLines() -> BeijingSubway {
                 stationList.append(stationNativeName)
                 if let aElement = elem.at_xpath("a"), let stationHref = aElement["href"] {
                     let stationTimetablesUrl = getStationTimetablesUrl(stationUrl: stationHref)
-                    let station = Station(nativeName: stationNativeName)
+                    let station = Station(nativeName: stationNativeName, weekdaySchedules: [], weekendSchedules: [], unknownSchedules: [])
                     for url in stationTimetablesUrl {
                         station.addUrl(url)
                     }

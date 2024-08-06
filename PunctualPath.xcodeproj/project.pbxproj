@@ -13,12 +13,12 @@
 		CF19AD6D2C16EF3B004BCA08 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CF19AD6C2C16EF3B004BCA08 /* Preview Assets.xcassets */; };
 		CF433D172C1C216B00FF0E7F /* LineSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF433D162C1C216B00FF0E7F /* LineSearchView.swift */; };
 		CFAA15252C2AFA950080817F /* BeijingSubway.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA15242C2AFA950080817F /* BeijingSubway.swift */; };
-		CFAA15272C2AFD290080817F /* Timetable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA15262C2AFD290080817F /* Timetable.swift */; };
 		CFAA152A2C2AFFCE0080817F /* Kanna in Frameworks */ = {isa = PBXBuildFile; productRef = CFAA15292C2AFFCE0080817F /* Kanna */; };
 		CFDB01BB2C581D3B00584FC4 /* NormalText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFDB01BA2C581D3B00584FC4 /* NormalText.swift */; };
 		CFDB01BD2C581DC400584FC4 /* CapsuleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFDB01BC2C581DC400584FC4 /* CapsuleText.swift */; };
-		CFDB01BF2C58CBFE00584FC4 /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = CFDB01BE2C58CBFE00584FC4 /* urls.json */; };
-		CFDB01C12C58E35600584FC4 /* ToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFDB01C02C58E35600584FC4 /* ToggleButton.swift */; };
+		CFDB01C12C58E35600584FC4 /* LargeCapsuleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFDB01C02C58E35600584FC4 /* LargeCapsuleText.swift */; };
+		CFDB01C32C5B21AB00584FC4 /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = CFDB01C22C5B21AB00584FC4 /* urls.json */; };
+		CFDB01C62C62524500584FC4 /* ToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFDB01C52C62524500584FC4 /* ToggleButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,11 +29,11 @@
 		CF19AD6C2C16EF3B004BCA08 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		CF433D162C1C216B00FF0E7F /* LineSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineSearchView.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		CFAA15242C2AFA950080817F /* BeijingSubway.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeijingSubway.swift; sourceTree = "<group>"; };
-		CFAA15262C2AFD290080817F /* Timetable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timetable.swift; sourceTree = "<group>"; };
 		CFDB01BA2C581D3B00584FC4 /* NormalText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NormalText.swift; sourceTree = "<group>"; };
 		CFDB01BC2C581DC400584FC4 /* CapsuleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapsuleText.swift; sourceTree = "<group>"; };
-		CFDB01BE2C58CBFE00584FC4 /* urls.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = urls.json; sourceTree = "<group>"; };
-		CFDB01C02C58E35600584FC4 /* ToggleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleButton.swift; sourceTree = "<group>"; };
+		CFDB01C02C58E35600584FC4 /* LargeCapsuleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeCapsuleText.swift; sourceTree = "<group>"; };
+		CFDB01C22C5B21AB00584FC4 /* urls.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = urls.json; sourceTree = "<group>"; };
+		CFDB01C52C62524500584FC4 /* ToggleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,11 +70,8 @@
 				CF19AD652C16EF39004BCA08 /* PunctualPathApp.swift */,
 				CFAA15242C2AFA950080817F /* BeijingSubway.swift */,
 				CF19AD672C16EF39004BCA08 /* TimerView.swift */,
-				CFAA15262C2AFD290080817F /* Timetable.swift */,
-				CFDB01C02C58E35600584FC4 /* ToggleButton.swift */,
-				CFDB01BE2C58CBFE00584FC4 /* urls.json */,
-				CFDB01BA2C581D3B00584FC4 /* NormalText.swift */,
-				CFDB01BC2C581DC400584FC4 /* CapsuleText.swift */,
+				CFDB01C22C5B21AB00584FC4 /* urls.json */,
+				CFDB01C42C5B21B900584FC4 /* Elements */,
 				CF433D162C1C216B00FF0E7F /* LineSearchView.swift */,
 				CF19AD692C16EF3B004BCA08 /* Assets.xcassets */,
 				CF19AD6B2C16EF3B004BCA08 /* Preview Content */,
@@ -88,6 +85,17 @@
 				CF19AD6C2C16EF3B004BCA08 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		CFDB01C42C5B21B900584FC4 /* Elements */ = {
+			isa = PBXGroup;
+			children = (
+				CFDB01C02C58E35600584FC4 /* LargeCapsuleText.swift */,
+				CFDB01C52C62524500584FC4 /* ToggleButton.swift */,
+				CFDB01BA2C581D3B00584FC4 /* NormalText.swift */,
+				CFDB01BC2C581DC400584FC4 /* CapsuleText.swift */,
+			);
+			path = Elements;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -155,7 +163,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CFDB01BF2C58CBFE00584FC4 /* urls.json in Resources */,
+				CFDB01C32C5B21AB00584FC4 /* urls.json in Resources */,
 				CF19AD6D2C16EF3B004BCA08 /* Preview Assets.xcassets in Resources */,
 				CF19AD6A2C16EF3B004BCA08 /* Assets.xcassets in Resources */,
 			);
@@ -171,11 +179,11 @@
 				CF19AD682C16EF39004BCA08 /* TimerView.swift in Sources */,
 				CFAA15252C2AFA950080817F /* BeijingSubway.swift in Sources */,
 				CF19AD662C16EF39004BCA08 /* PunctualPathApp.swift in Sources */,
-				CFDB01C12C58E35600584FC4 /* ToggleButton.swift in Sources */,
+				CFDB01C62C62524500584FC4 /* ToggleButton.swift in Sources */,
+				CFDB01C12C58E35600584FC4 /* LargeCapsuleText.swift in Sources */,
 				CF433D172C1C216B00FF0E7F /* LineSearchView.swift in Sources */,
 				CFDB01BB2C581D3B00584FC4 /* NormalText.swift in Sources */,
 				CFDB01BD2C581DC400584FC4 /* CapsuleText.swift in Sources */,
-				CFAA15272C2AFD290080817F /* Timetable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

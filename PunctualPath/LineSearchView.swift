@@ -29,7 +29,7 @@ class LineSearchViewModel: ObservableObject {
     @Published var filteredStations: [String] = []
     @Published var station: Station? = nil
     
-    @Published var timeTableUrl: TimetableURL? = nil
+    @Published var stationSchedule: StationSchedule? = nil
 
     
     init() {
@@ -75,8 +75,8 @@ class LineSearchViewModel: ObservableObject {
     }
     
     func switchDirection() {
-        timeTableUrl?.switchURLs()
-        direction = imageUrlToDirection(url:timeTableUrl?.urls.first)
+        stationSchedule?.switchSchedules()
+        direction = imageUrlToDirection(url:stationSchedule?.firstURL())
     }
     
     func fetch(url: String, completion: @escaping (Data) throws -> Void) {
@@ -88,12 +88,12 @@ class LineSearchViewModel: ObservableObject {
             do {
                 let (data, response) = try await URLSession.shared.data(from: url)
                 guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                    print("Invalid response")
+                    print("Download error: Invalid response")
                     return
                 }
                 try completion(data)
             } catch {
-                print("Download error: \(error.localizedDescription)")
+                print("Process error: \(error.localizedDescription)")
                 return
             }
         }
@@ -102,6 +102,7 @@ class LineSearchViewModel: ObservableObject {
     func selectLine(lineName: String) {
         let basePath = "https://jiaqizhao2004.github.io/PunctualPath/api/"
         let _: () = fetch(url: basePath + lineName + ".json") { data in
+//            self.line = Line.fromDict(data)
             self.line = try JSONDecoder().decode(Line.self, from: data)
             self.isLineSelected = true
             self.isStationSelected = false
@@ -117,8 +118,8 @@ class LineSearchViewModel: ObservableObject {
         isStationSelected = true
         enteredStationName = stationName
         operationTime = getOperationTime()
-        timeTableUrl = station?.getTbUrls(for: operationTime)
-        direction = imageUrlToDirection(url:timeTableUrl?.urls.first)
+        stationSchedule = station?.getSchedules(time: operationTime)
+        direction = imageUrlToDirection(url:stationSchedule?.firstURL())
     }
     
     func currentTimeInSec() -> Int {
@@ -133,16 +134,12 @@ class LineSearchViewModel: ObservableObject {
     }
     
     func nextTrain() -> Int {
-        guard let station = station else {
+        guard station != nil else {
             return 0
         }
         
-        var arrivalTimes: [Int]
-        
-        if operationTime == OperationTime.weekday {
-            arrivalTimes = station.weekdayArrivialTimes.sorted()
-        } else {
-            arrivalTimes = station.weekendArrivialTimes.sorted()
+        guard let arrivalTimes = stationSchedule?.firstArrivalTimes() else {
+            return -1
         }
         
         let now = currentTimeInSec()
@@ -298,7 +295,7 @@ struct LineSearchView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 Button {
-                    if let url = viewModel.timeTableUrl?.urls.first {
+                    if let url = viewModel.stationSchedule?.firstURL() {
                         UIApplication.shared.open(URL(string: url)!)
                     }
                 } label: {
@@ -310,7 +307,7 @@ struct LineSearchView: View {
         .navigationTitle("地铁准时宝")
         .sheet(isPresented: $isTimerOn) {
             if let station = viewModel.station {
-                TimerView(isTimerOn: $isTimerOn, nextTrain: secondsToHoursMinutesSeconds(viewModel.nextTrain()), stationName: station.nativeName, timeRemaining: viewModel.nextTrain() - viewModel.currentTimeInSec())
+                TimerView(isTimerOn: $isTimerOn, stationSchedule: $viewModel.stationSchedule, nextTrain: secondsToHoursMinutesSeconds(viewModel.nextTrain()), stationName: station.nativeName, timeRemaining: viewModel.nextTrain() - viewModel.currentTimeInSec())
             }
         }
         
@@ -325,7 +322,7 @@ struct LineSearchView: View {
 }
 
 
-extension String.Encoding{
+extension String.Encoding {
     public static let gbk: String.Encoding = {
         let cfEnc = CFStringEncodings.GB_18030_2000
         let enc = CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(cfEnc.rawValue))

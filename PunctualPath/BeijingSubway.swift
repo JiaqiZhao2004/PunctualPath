@@ -15,31 +15,43 @@ enum OperationTime {
 }
 
 
-class TimetableURL {
-    var urls: [String] = []
-
-    func addURL(_ url: String) {
-        urls.append(url)
+class StationSchedule {
+    var schedules: [Schedule] = []
+    
+    init(schedules: [Schedule]) {
+        self.schedules = schedules
+    }
+    
+    func addSchedule(_ schedule: Schedule) {
+        schedules.append(schedule)
     }
 
-    func switchURLs() {
-        guard !urls.isEmpty else { return }
-        urls.append(urls.removeFirst())
+    func switchSchedules() {
+        guard !schedules.isEmpty else { return }
+        schedules.append(schedules.removeFirst())
+    }
+    
+    func firstURL() -> String {
+        return schedules.first?.url ?? ""
+    }
+    
+    func firstArrivalTimes() -> [Int] {
+        return schedules.first?.arrivalTimes.sorted() ?? []
     }
 
     func printURLs() {
-        for url in urls {
-            print(url)
+        for schedule in schedules {
+            print(schedule.url)
         }
     }
 
     func getImg(completion: @escaping (UIImage?) -> Void) {
-        guard !urls.isEmpty else {
+        guard !schedules.isEmpty else {
             completion(nil)
             return
         }
-        print("Getting image from \(urls[0])")
-        guard let url = URL(string: urls[0]) else {
+        print("Getting image from \(schedules[0])")
+        guard let url = URL(string: schedules[0].url) else {
             completion(nil)
             return
         }
@@ -57,11 +69,11 @@ class TimetableURL {
     }
 
     func getImg() async -> UIImage? {
-        guard !urls.isEmpty else {
+        guard !schedules.isEmpty else {
             return nil
         }
-        print("Getting image from \(urls[0])")
-        guard let url = URL(string: urls[0]) else {
+        print("Getting image from \(schedules[0])")
+        guard let url = URL(string: schedules[0].url) else {
             return nil
         }
 
@@ -81,72 +93,134 @@ class TimetableURL {
 
 }
 
+class Schedule: CustomStringConvertible, Decodable {
+    var url: String
+    var arrivalTimes: [Int]
+    
+    init(url: String, arrivalTimes: [Int]) {
+        self.url = url
+        self.arrivalTimes = arrivalTimes
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case url = "url"
+        case arrivalTimes = "arrival_times"
+    }
+    
+    required init(from decoder: Decoder, debug: Bool=true) throws {
+        if debug {print("Decode Schedule")}
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        url = try container.decode(String.self, forKey: .url)
+        if debug {print(url)}
+        arrivalTimes = try container.decode([Int].self, forKey: .arrivalTimes)
+        if debug {print(arrivalTimes[0])}
+    }
+    
+//    func setArrivalTimes(arrivalTimes: [Int]) -> Void {
+//        self.arrivalTimes = arrivalTimes
+//    }
+    
+    var description: String {
+        return url
+    }
+    
+//    func addUrl(timetableUrl: String) -> OperationTime? {
+//        self.url = timetableUrl
+//        if timetableUrl.contains("工作日") {
+//            return .weekday
+//        }
+//        if timetableUrl.contains("双休日") {
+//            return .weekend
+//        }
+//        if !timetableUrl.contains("工作日") && !timetableUrl.contains("双休日") {
+//            return nil
+//        }
+//        return nil
+//    }
+    
+    static func fromDict(_ data: [String: Any]) -> Schedule {
+        var arrivalTimes: [Int] = []
+        if let arrivalTimesData = data["arrival_times"] as? [Int] {
+            arrivalTimes = arrivalTimesData
+        }
+        return Schedule(url: data["url"] as! String, arrivalTimes: arrivalTimes)
+    }
+}
+
 
 class Station: CustomStringConvertible, Decodable {
     var nativeName: String
-    var weekdayUrls: [String] = []
-    var weekendUrls: [String] = []
-    var unknownUrls: [String] = []
-    var weekdayArrivialTimes: [Int] = []
-    var weekendArrivialTimes: [Int] = []
+    var weekdaySchedules: [Schedule]
+    var weekendSchedules: [Schedule]
+    var unknownSchedules: [Schedule]
     
-    init(nativeName: String) {
+    init(nativeName: String, weekdaySchedules: [Schedule], weekendSchedules: [Schedule], unknownSchedules: [Schedule]) {
         self.nativeName = nativeName
+        self.weekdaySchedules = weekdaySchedules
+        self.weekendSchedules = weekendSchedules
+        self.unknownSchedules = unknownSchedules
+    }
+    
+    required init(from decoder: Decoder, debug: Bool=true) throws {
+        if debug {print("Station Decode")}
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        nativeName = try container.decode(String.self, forKey: .nativeName)
+        weekdaySchedules = try container.decode([Schedule].self, forKey: .weekdaySchedules)
+        weekendSchedules = try container.decode([Schedule].self, forKey: .weekendSchedules)
+        unknownSchedules = try container.decode([Schedule].self, forKey: .unknownSchedules)
     }
 
     var description: String {
         return nativeName
     }
-
-    func addUrl(_ timetableUrl: String) {
-        if timetableUrl.contains("工作日") {
-            weekdayUrls.append(timetableUrl)
+    
+    func addSchedule(schedule: Schedule, operationTime: OperationTime?) -> Void {
+        guard let operationTime = operationTime else {
+            unknownSchedules.append(schedule)
+            return
         }
-        if timetableUrl.contains("双休日") {
-            weekendUrls.append(timetableUrl)
-        }
-        if !timetableUrl.contains("工作日") && !timetableUrl.contains("双休日") {
-            unknownUrls.append(timetableUrl)
+        switch operationTime {
+        case OperationTime.weekday:
+            weekdaySchedules.append(schedule)
+        case OperationTime.weekend:
+            weekendSchedules.append(schedule)
         }
     }
-
-    func getTbUrls(for time: OperationTime) -> TimetableURL {
-        let urls = TimetableURL()
-        switch time {
-        case .weekday:
-            for weekdayUrl in weekdayUrls {
-                urls.addURL(weekdayUrl)
-            }
-        case .weekend:
-            for weekendUrl in weekendUrls {
-                urls.addURL(weekendUrl)
-            }
+    
+    func getSchedules(time: OperationTime) -> StationSchedule {
+        var schedules: [Schedule] = []
+        if time == .weekday {
+            schedules = weekdaySchedules
         }
-        if urls.urls.isEmpty {
-            for unknownUrl in unknownUrls {
-                urls.addURL(unknownUrl)
-            }
+        else if time == .weekend {
+            schedules = weekendSchedules
         }
-        return urls
+        if schedules.isEmpty {
+            schedules = unknownSchedules
+        }
+        return StationSchedule(schedules: schedules)
     }
+    
 
     static func fromDict(_ data: [String: Any]) -> Station {
-        let station = Station(nativeName: data["native_name"] as! String)
-        station.weekdayUrls = data["weekday_tb"] as! [String]
-        station.weekendUrls = data["weekend_tb"] as! [String]
-        station.unknownUrls = data["unknown_tb"] as! [String]
-//        station.weekdayArrivialTimes = data["weekday_arrival_times"] as! [Int]
-//        station.weekendArrivialTimes = data["weekend_arrival_times"] as! [Int]
+        let station = Station(nativeName: data["native_name"] as! String, weekdaySchedules: [], weekendSchedules: [], unknownSchedules: [])
+        for schedule in data["weekday_schedules"] as! [[String: Any]] {
+            station.addSchedule(schedule: Schedule.fromDict(schedule), operationTime: .weekday)
+        }
+        for schedule in data["weekend_schedules"] as! [[String: Any]] {
+            station.addSchedule(schedule: Schedule.fromDict(schedule), operationTime: .weekend)
+        }
+        for schedule in data["unknown_schedules"] as! [[String: Any]] {
+            station.addSchedule(schedule: Schedule.fromDict(schedule), operationTime: nil)
+        }
         return station
     }
     
     enum CodingKeys: String, CodingKey {
         case nativeName = "native_name"
-        case weekdayUrls = "weekday_tb"
-        case weekendUrls = "weekend_tb"
-        case unknownUrls = "unknown_tb"
-        case weekdayArrivialTimes = "weekday_arrival_times"
-        case weekendArrivialTimes = "weekend_arrival_times"
+        case weekdaySchedules = "weekday_schedules"
+        case weekendSchedules = "weekend_schedules"
+        case unknownSchedules = "unknown_schedules"
     }
 }
 
@@ -155,6 +229,14 @@ class Line: CustomStringConvertible, Decodable {
     let nativeName: String
     let stationList: [String]
     let stations: [String: Station]
+    
+    required init(from decoder: Decoder, debug: Bool=true) throws {
+        if debug {print("Line Decode")}
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        nativeName = try container.decode(String.self, forKey: .nativeName)
+        stationList = try container.decode([String].self, forKey: .stationList)
+        stations = try container.decode([String: Station].self, forKey: .stations)
+    }
 
     init(nativeName: String, stationList: [String], stations: [String: Station]) {
         self.nativeName = nativeName
@@ -182,7 +264,6 @@ class Line: CustomStringConvertible, Decodable {
         return Array(stations.values)
     }
 
-
     static func fromDict(_ data: [String: Any]) -> Line {
         // Convert the JSON-serializable dictionary back to a dictionary of Station objects
         var stations: [String: Station] = [:]
@@ -203,10 +284,10 @@ class Line: CustomStringConvertible, Decodable {
 }
 
 
-class BeijingSubway {
+class BeijingSubway: Decodable {
     var name: String
     var lines: [String: Line]
-
+    
     init(lines: [String: Line] = [:]) {
         self.name = "BeijingSubway"
         self.lines = lines
@@ -239,19 +320,28 @@ class BeijingSubway {
         }
         return BeijingSubway(lines: lines)
     }
+    
 
     static func fromJsonFile() -> BeijingSubway? {
         guard let textFileUrl = Bundle.main.url(forResource: "urls", withExtension: "json") else {
             return nil
         }
-        guard let contents = try? String(contentsOf: textFileUrl) else {
+        guard let contents = try? Data(contentsOf: textFileUrl) else {
             return nil
         }
-        let data: Data = Data(contents.utf8)
         
-        guard let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
+//        do {
+//            let subway = try JSONDecoder().decode(BeijingSubway.self, from: contents)
+//            return subway
+//        } catch {
+//            print("Failed to decode BeijingSubway: \(error)")
+//            return nil
+//        }
+        
+        guard let json = try? JSONSerialization.jsonObject(with: contents, options: []) as? [String: Any] else {
             return nil
         }
+        
         return fromDict(json)
     }
 }
