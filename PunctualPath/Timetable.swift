@@ -12,7 +12,8 @@ func safeTime(seconds: Int) -> Int {
     return seconds - 40
 }
 
-func hmsToSec(h: Int, m: Int, s: Int) -> Int {
+func hmsToSec(time: (Int, Int, Int)) -> Int {
+    let (h, m, s) = time
     return h * 3600 + m * 60 + s
 }
 

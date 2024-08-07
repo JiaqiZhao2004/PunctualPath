@@ -85,6 +85,7 @@ class LineSearchViewModel: ObservableObject {
 //            self.line = Line.fromDict(data)
             self.line = try JSONDecoder().decode(Line.self, from: data)
             self.isLineSelected = true
+            print("line selected")
             self.isStationSelected = false
             self.direction = ""
             self.enteredStationName = ""
@@ -111,7 +112,7 @@ struct LineSearchView: View {
     
     @StateObject private var viewModel = LineSearchViewModel()
     @State var isTimerOn: Bool = false
-    @FocusState private var isTextFieldFocused: Bool
+    @FocusState var isTextFieldFocused: Bool
     
     var body: some View {
         VStack {
@@ -121,6 +122,7 @@ struct LineSearchView: View {
                     .padding(.bottom, 90)
                     
                 TextField("1号线", text: $viewModel.enteredLineName, onEditingChanged: { _ in
+                    viewModel.isLineSelected = false
                     if !viewModel.isLineSelected {
                         if viewModel.enteredLineName.isEmpty {
                             viewModel.filteredLines = viewModel.allLines
@@ -130,7 +132,6 @@ struct LineSearchView: View {
                             }
                         }
                     }
-                    viewModel.isLineSelected = false
                 })
                 .focused($isTextFieldFocused)
                 .autocapitalization(.none)
@@ -142,6 +143,9 @@ struct LineSearchView: View {
                 .font(.system(size: 17))
             }
             .padding(.top, 20)
+            .onTapGesture {
+                isTextFieldFocused = false
+            }
             
             if !viewModel.isLineSelected {
                 if viewModel.filteredLines.isEmpty && !viewModel.enteredLineName.isEmpty {
@@ -152,6 +156,7 @@ struct LineSearchView: View {
                         ForEach(viewModel.filteredLines, id: \.self) { line in
                             Button(action: {
                                 viewModel.selectLine(lineName: line)
+                                isTextFieldFocused = false
                             }) {
                                 Text(line)
                                     .font(.system(size: 17))
@@ -164,6 +169,7 @@ struct LineSearchView: View {
             if viewModel.isLineSelected {
                 // second textfield
                 TextField("站名", text: $viewModel.enteredStationName, onEditingChanged: { _ in
+                    viewModel.isStationSelected = false
                     if !viewModel.isStationSelected {
                         if viewModel.enteredStationName.isEmpty {
                             viewModel.filteredStations = viewModel.allLineStations
@@ -173,7 +179,6 @@ struct LineSearchView: View {
                             }
                         }
                     }
-                    viewModel.isStationSelected = false
                 })
                 .focused($isTextFieldFocused)
                 .autocapitalization(.none)
@@ -193,6 +198,7 @@ struct LineSearchView: View {
                             ForEach(viewModel.filteredStations, id: \.self) { station in
                                 Button(action: {
                                     viewModel.selectStation(stationName: station)
+                                    isTextFieldFocused = false
                                 }) {
                                     Text(station)
                                         .font(.system(size: 17))
@@ -253,7 +259,6 @@ struct LineSearchView: View {
                 TimerView(isTimerOn: $isTimerOn, stationName: viewModel.station?.nativeName ?? "站名错误", scheduleBook: scheduleBook)
             }
         }
-        
     }
 }
 

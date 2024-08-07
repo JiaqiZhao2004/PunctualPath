@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum CountdownMode {
+enum Mode {
     case announcement
     case arrival
     case departure
@@ -25,7 +25,8 @@ struct TimerView: View {
     
     // Countdown Modes
     @State var countdownInSeconds: Bool = true
-    @State var countdownTarget: CountdownMode = .announcement
+    @State var countdownTarget: Mode = .announcement
+    @State var trainStatus: Mode = .announcement
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -42,96 +43,127 @@ struct TimerView: View {
         return max(adjustedTime, 0)
     }
     
-    var body: some View {
-        VStack {
-            Spacer(minLength: 150)
-            NormalText(text:"如下计划的列车")
-                .padding(.top, 55)
-            CapsuleText(text: HMSToString(time: secToHMS( scheduleBook.firstScheduleNextTrain()), mode: .HM))
-            NormalText(text: "将于")
-            Button {
-                countdownInSeconds.toggle()
-            } label: {
-                CapsuleText(text: countdownInSeconds ? "\(countdownTime())" : HMSToString(time: secToHMS(countdownTime())))
-            }
-            let caption = switch countdownTarget {
-            case .announcement:
-                "准备进入"
-            case .arrival:
-                "抵达"
-            case .departure:
-                "离开"
-            }
-            NormalText(text: (countdownInSeconds ? "秒" : "") + "后" + caption)
-            Text(stationName)
-                .font(.title)
-                .bold()
-                .foregroundStyle(.black)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 5)
-            //                Button {
-            //                    cancel()
-            //                } label: {
-            //                    NormalText(text: "返回")
-            //                        .padding(.top, 50)
-            //                }
-            
-            Button {
-                UIApplication.shared.open(URL(string: scheduleBook.firstScheduleURL())!)
-            } label: {
-                NormalText(text: "列车时刻表原图")
-            }
-            .offset(x: 0, y: 35)
-            
-            Spacer()
-            
-            HStack {
-                VStack {
-                    NormalText(text: "-60s")
-                        .offset(x: 0, y: 10)
-                    Button {
-                        countdownTarget = .announcement
-                    } label: {
-                        ToggleButton(text: "广播进站", on: countdownTarget == .announcement)
-                    }
-                    
-                    NormalText(text: countdownInSeconds ? "\(max(0, firstTrainTimer - 60))s" : HMSToString(time: secToHMS(max(0, firstTrainTimer - 60))))
-                        .offset(x: 0, y: -5)
-                    NormalText(text: countdownInSeconds ? "\(max(0, secondTrainTimer - 60))s" : HMSToString(time: secToHMS(max(0, secondTrainTimer - 60))))
-                        .offset(x: 0, y: -15)
-                }
-                VStack {
-                    NormalText(text: "-30s")
-                        .offset(x: 0, y: 10)
-                    Button {
-                        countdownTarget = .arrival
-                    } label: {
-                        ToggleButton(text: "进站", on: countdownTarget == .arrival)
-                    }
-                    NormalText(text: countdownInSeconds ? "\(max(0, firstTrainTimer - 30))s" : HMSToString(time: secToHMS(max(0, firstTrainTimer - 30))))
-                        .offset(x: 0, y: -5)
-                    NormalText(text: countdownInSeconds ? "\(max(0, secondTrainTimer - 30))s" : HMSToString(time: secToHMS(max(0, secondTrainTimer - 30))))
-                        .offset(x: 0, y: -15)
-                }
-                VStack {
-                    NormalText(text: "-0s")
-                        .offset(x: 0, y: 10)
-                    Button {
-                        countdownTarget = .departure
-                    } label: {
-                        ToggleButton(text: "离站", on: countdownTarget == .departure)
-                    }
-                    NormalText(text: countdownInSeconds ? "\(max(0, firstTrainTimer))s" : HMSToString(time: secToHMS(max(0, firstTrainTimer))))
-                        .offset(x: 0, y: -5)
-                    NormalText(text: countdownInSeconds ? "\(max(0, secondTrainTimer))s" : HMSToString(time: secToHMS(max(0, secondTrainTimer))))
-                        .offset(x: 0, y: -15)
-                }
-            }
-            .offset(x: 0, y: 15)
+    func getBackgroundStripeColor() -> Color {
+        switch trainStatus {
+        case .announcement:
+            return Color.init(red: 138/255, green: 216/255, blue: 121/255)
+        case .arrival:
+            return Color.init(red: 250/255, green: 159/255, blue: 66/255)
+        case .departure:
+            return Color.init(red: 243/255, green: 83/255, blue: 58/255)
         }
-        .onReceive(timer) { time in
-            firstTrainTimer = scheduleBook.firstScheduleNextTrain() - getCurrentTimeInSec()
-            secondTrainTimer = scheduleBook.firstScheduleNextTrain(at: getCurrentTimeInSec() + firstTrainTimer + 1) - getCurrentTimeInSec()
+    }
+    
+    var body: some View {
+        GeometryReader { geometry in
+            VStack {
+                Spacer(minLength: 150)
+                NormalText(text:"如下计划的列车")
+                    .padding(.top, 55)
+                CapsuleText(text: HMSToString(time: secToHMS( scheduleBook.firstScheduleNextTrain()), mode: .HM))
+                NormalText(text: "将于")
+                Button {
+                    countdownInSeconds.toggle()
+                } label: {
+                    CapsuleText(text: countdownInSeconds ? "\(countdownTime())" : HMSToString(time: secToHMS(countdownTime())))
+                }
+                let caption = switch countdownTarget {
+                case .announcement:
+                    "准备进入"
+                case .arrival:
+                    "抵达"
+                case .departure:
+                    "离开"
+                }
+                NormalText(text: (countdownInSeconds ? "秒" : "") + "后" + caption)
+                Text(stationName)
+                    .font(.title)
+                    .bold()
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 5)
+                //                Button {
+                //                    cancel()
+                //                } label: {
+                //                    NormalText(text: "返回")
+                //                        .padding(.top, 50)
+                //                }
+                
+                Button {
+                    UIApplication.shared.open(URL(string: scheduleBook.firstScheduleURL())!)
+                } label: {
+                    NormalText(text: "列车时刻表原图")
+                }
+                .offset(x: 0, y: 35)
+                
+                Spacer()
+                
+                HStack {
+                    VStack {
+                        NormalText(text: "-60s")
+                            .offset(x: 0, y: 10)
+                        Button {
+                            countdownTarget = .announcement
+                        } label: {
+                            ToggleButton(text: "广播进站", on: countdownTarget == .announcement)
+                        }
+                        
+                        NormalText(text: countdownInSeconds ? "\(max(0, firstTrainTimer - 60))s" : HMSToString(time: secToHMS(max(0, firstTrainTimer - 60))))
+                            .offset(x: 0, y: -5)
+                        NormalText(text: countdownInSeconds ? "\(max(0, secondTrainTimer - 60))s" : HMSToString(time: secToHMS(max(0, secondTrainTimer - 60))))
+                            .offset(x: 0, y: -15)
+                    }
+                    VStack {
+                        NormalText(text: "-30s")
+                            .offset(x: 0, y: 10)
+                        Button {
+                            countdownTarget = .arrival
+                        } label: {
+                            ToggleButton(text: "进站", on: countdownTarget == .arrival)
+                        }
+                        NormalText(text: countdownInSeconds ? "\(max(0, firstTrainTimer - 30))s" : HMSToString(time: secToHMS(max(0, firstTrainTimer - 30))))
+                            .offset(x: 0, y: -5)
+                        NormalText(text: countdownInSeconds ? "\(max(0, secondTrainTimer - 30))s" : HMSToString(time: secToHMS(max(0, secondTrainTimer - 30))))
+                            .offset(x: 0, y: -15)
+                    }
+                    VStack {
+                        NormalText(text: "-0s")
+                            .offset(x: 0, y: 10)
+                        Button {
+                            countdownTarget = .departure
+                        } label: {
+                            ToggleButton(text: "离站", on: countdownTarget == .departure)
+                        }
+                        NormalText(text: countdownInSeconds ? "\(max(0, firstTrainTimer))s" : HMSToString(time: secToHMS(max(0, firstTrainTimer))))
+                            .offset(x: 0, y: -5)
+                        NormalText(text: countdownInSeconds ? "\(max(0, secondTrainTimer))s" : HMSToString(time: secToHMS(max(0, secondTrainTimer))))
+                            .offset(x: 0, y: -15)
+                    }
+                }
+                .offset(x: 0, y: 15)
+            }
+            .frame(width: geometry.size.width, height: geometry.size.height) // Ensure the VStack covers the entire screen
+            .diagonalStripesBackground(stripeWidth: 233,
+                                       stripeColor: getBackgroundStripeColor(), backgroundColor: .white)
+            .onReceive(timer) { time in
+                firstTrainTimer = scheduleBook.firstScheduleNextTrain() - getCurrentTimeInSec()
+                secondTrainTimer = scheduleBook.firstScheduleNextTrain(at: getCurrentTimeInSec() + firstTrainTimer + 1) - getCurrentTimeInSec()
+                autoSetCountdownMode()
+            }
+            .onAppear {
+                if firstTrainTimer <= 0 {
+                    countdownTarget = .announcement
+                    trainStatus = .announcement
+                }
+                else if firstTrainTimer - 30 <= 0 {
+                    countdownTarget = .departure
+                    trainStatus = .departure
+                }
+                else if firstTrainTimer - 60 <= 0 {
+                    countdownTarget = .arrival
+                    trainStatus = .arrival
+                }
+            }
         }
     }
     
@@ -139,6 +171,20 @@ struct TimerView: View {
         isTimerOn = false
     }
     
+    func autoSetCountdownMode() {
+        if firstTrainTimer == 1 {
+            countdownTarget = .announcement
+            trainStatus = .announcement
+        }
+        else if firstTrainTimer - 30 == 0 {
+            countdownTarget = .departure
+            trainStatus = .departure
+        }
+        else if firstTrainTimer - 60 == 0 {
+            countdownTarget = .arrival
+            trainStatus = .arrival
+        }
+    }
 }
 
 
