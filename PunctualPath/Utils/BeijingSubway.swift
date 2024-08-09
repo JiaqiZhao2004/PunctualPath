@@ -376,3 +376,6 @@ class BeijingSubway: Decodable {
     }
 }
 
+func loadBeijingSubwayNoThrow() -> BeijingSubway {
+    return BeijingSubway.fromJsonFile()!
+}

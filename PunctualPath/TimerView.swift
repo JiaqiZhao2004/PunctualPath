@@ -28,15 +28,19 @@ struct TimerView: View {
     @State var countdownTarget: Mode = .announcement
     @State var trainStatus: Mode = .announcement
     
+    // Offset
+    let arrivalTimeOffset = 45
+    let announcementTimeOffset = 75
+    
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     func countdownTime() -> Int {
         let adjustedTime: Int
         switch countdownTarget {
         case .announcement:
-            adjustedTime = firstTrainTimer - 60
+            adjustedTime = firstTrainTimer - announcementTimeOffset
         case .arrival:
-            adjustedTime = firstTrainTimer - 30
+            adjustedTime = firstTrainTimer - arrivalTimeOffset
         case .departure:
             adjustedTime = firstTrainTimer
         }
@@ -100,7 +104,7 @@ struct TimerView: View {
                 
                 HStack {
                     VStack {
-                        NormalText(text: "-60s")
+                        NormalText(text: "-\(announcementTimeOffset)s")
                             .offset(x: 0, y: 10)
                         Button {
                             countdownTarget = .announcement
@@ -108,22 +112,22 @@ struct TimerView: View {
                             ToggleButton(text: "广播进站", on: countdownTarget == .announcement)
                         }
                         
-                        NormalText(text: countdownInSeconds ? "\(max(0, firstTrainTimer - 60))s" : HMSToString(time: secToHMS(max(0, firstTrainTimer - 60))))
+                        NormalText(text: countdownInSeconds ? "\(max(0, firstTrainTimer - announcementTimeOffset))s" : HMSToString(time: secToHMS(max(0, firstTrainTimer - announcementTimeOffset))))
                             .offset(x: 0, y: -5)
-                        NormalText(text: countdownInSeconds ? "\(max(0, secondTrainTimer - 60))s" : HMSToString(time: secToHMS(max(0, secondTrainTimer - 60))))
+                        NormalText(text: countdownInSeconds ? "\(max(0, secondTrainTimer - announcementTimeOffset))s" : HMSToString(time: secToHMS(max(0, secondTrainTimer - announcementTimeOffset))))
                             .offset(x: 0, y: -15)
                     }
                     VStack {
-                        NormalText(text: "-30s")
+                        NormalText(text: "-\(arrivalTimeOffset)s")
                             .offset(x: 0, y: 10)
                         Button {
                             countdownTarget = .arrival
                         } label: {
                             ToggleButton(text: "进站", on: countdownTarget == .arrival)
                         }
-                        NormalText(text: countdownInSeconds ? "\(max(0, firstTrainTimer - 30))s" : HMSToString(time: secToHMS(max(0, firstTrainTimer - 30))))
+                        NormalText(text: countdownInSeconds ? "\(max(0, firstTrainTimer - arrivalTimeOffset))s" : HMSToString(time: secToHMS(max(0, firstTrainTimer - arrivalTimeOffset))))
                             .offset(x: 0, y: -5)
-                        NormalText(text: countdownInSeconds ? "\(max(0, secondTrainTimer - 30))s" : HMSToString(time: secToHMS(max(0, secondTrainTimer - 30))))
+                        NormalText(text: countdownInSeconds ? "\(max(0, secondTrainTimer - arrivalTimeOffset))s" : HMSToString(time: secToHMS(max(0, secondTrainTimer - arrivalTimeOffset))))
                             .offset(x: 0, y: -15)
                     }
                     VStack {
@@ -155,11 +159,11 @@ struct TimerView: View {
                     countdownTarget = .announcement
                     trainStatus = .announcement
                 }
-                else if firstTrainTimer - 30 <= 0 {
+                else if firstTrainTimer - arrivalTimeOffset <= 0 {
                     countdownTarget = .departure
                     trainStatus = .departure
                 }
-                else if firstTrainTimer - 60 <= 0 {
+                else if firstTrainTimer - announcementTimeOffset <= 0 {
                     countdownTarget = .arrival
                     trainStatus = .arrival
                 }
@@ -176,11 +180,11 @@ struct TimerView: View {
             countdownTarget = .announcement
             trainStatus = .announcement
         }
-        else if firstTrainTimer - 30 == 0 {
+        else if firstTrainTimer - arrivalTimeOffset == 0 {
             countdownTarget = .departure
             trainStatus = .departure
         }
-        else if firstTrainTimer - 60 == 0 {
+        else if firstTrainTimer - announcementTimeOffset == 0 {
             countdownTarget = .arrival
             trainStatus = .arrival
         }
