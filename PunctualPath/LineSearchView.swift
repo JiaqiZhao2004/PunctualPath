@@ -7,6 +7,8 @@
 
 import SwiftUI
 import UIKit
+import CoreLocation
+import Combine
 
 
 @MainActor
@@ -30,7 +32,7 @@ class LineSearchViewModel: ObservableObject {
     @Published var station: Station? = nil
     
     @Published var scheduleBook: ScheduleBook? = nil
-
+    
     
     init() {
         self.beijingSubway = loadBeijingSubwayNoThrow()
@@ -38,8 +40,7 @@ class LineSearchViewModel: ObservableObject {
     }
     
     func selectLine(lineName: String) {
-        let basePath = "https://jiaqizhao2004.github.io/PunctualPath/api/"
-        let _: () = fetch(url: basePath + lineName + ".json") { data in
+        let _: () = fetch(url: kRemoteBasePath + lineName + ".json") { data in
 //            self.line = Line.fromDict(data)
             self.line = try JSONDecoder().decode(Line.self, from: data)
             self.isLineSelected = true
@@ -71,11 +72,14 @@ class LineSearchViewModel: ObservableObject {
 struct LineSearchView: View {
     
     @StateObject private var viewModel = LineSearchViewModel()
+    
     @State var isTimerOn: Bool = false
     @FocusState var isTextFieldFocused: Bool
+    let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
     
     var body: some View {
         VStack {
+            LocationView()
             ZStack {
                 NormalText(text: "北京地铁")
                     .padding(.trailing, 280)
@@ -220,6 +224,8 @@ struct LineSearchView: View {
             }
         }
     }
+    
+    
 }
 
 

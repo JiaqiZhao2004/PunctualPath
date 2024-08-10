@@ -24,6 +24,41 @@ func trainDirectionFromURL(url: String?) -> String {
     return str4
 }
 
+typealias JSONDictionary = [String: Any]
+
+// Function to read and decode JSON
+func readJSONFromFile(fileName: String) -> JSONDictionary? {
+    guard let data = loadJSONFromFile(named: fileName) else {
+        return nil
+    }
+    do {
+        // Try to decode the data to a dictionary
+        if let jsonDict = try JSONSerialization.jsonObject(with: data, options: []) as? JSONDictionary {
+            return jsonDict
+        }
+    } catch {
+        print("Failed to read JSON data: \(error)")
+    }
+    return nil
+}
+
+// Function to load JSON from a file
+func loadJSONFromFile(named filename: String) -> Data? {
+    guard let url = Bundle.main.url(forResource: filename, withExtension: "json") else {
+        print("Failed to locate file in bundle.")
+        return nil
+    }
+    
+    do {
+        let data = try Data(contentsOf: url)
+        return data
+    } catch {
+        print("Failed to load JSON data: \(error)")
+        return nil
+    }
+}
+
+
 func fetch(url: String, completion: @escaping (Data) throws -> Void) {
     print("Getting json from \(url)")
     guard let url = URL(string: url) else {
