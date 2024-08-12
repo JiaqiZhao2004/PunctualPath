@@ -8,6 +8,7 @@
 import SwiftUI
 import CoreLocation
 import Combine
+import Foundation
 
 struct Location: Decodable {
     let longitude: Double
@@ -40,13 +41,15 @@ func getStationLocations() -> [String: Location] {
     return [:]
 }
 
-class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
-    @Published var location: CLLocation?
-    private var locationManager: CLLocationManager
-    private var timer: AnyCancellable?
-    @Published var nearestStation: String = ""
-    private var stationLocations: [String: Location]
 
+class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    
+    @Published private var location: CLLocation?
+    @Published private var nearestStation: String = ""
+    private var locationManager: CLLocationManager
+    private var stationLocations: [String: Location]
+    private var timerPublisher: AnyCancellable?
+    
     override init() {
         self.stationLocations = getStationLocations()
         locationManager = CLLocationManager()
@@ -54,23 +57,26 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
-        
-        startTimer()
+        self.setupTimer()
     }
 
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        location = locations.last
+    internal func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        DispatchQueue.main.async {
+            self.location = locations.last
+        }
     }
-
-    func startTimer() {
-        timer = Timer.publish(every: 5, on: .main, in: .common)
-            .autoconnect()
+    
+    private func setupTimer() {
+        timerPublisher = Timer.publish(every: 5.0, on: .main, in: .default)
+            .autoconnect() // Automatically connect to the timer publisher
+            .receive(on: DispatchQueue.main) // Ensure updates are received on the main thread
             .sink { [weak self] _ in
+                // Update your published property on the main thread
                 self?.performScheduledTask()
             }
     }
 
-    func performScheduledTask() {
+    private func performScheduledTask() {
         // Perform your desired task here every 5 seconds.
         // For example, you might want to fetch the current location or update the UI.
         print("Performing scheduled task")
@@ -82,7 +88,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    func getNearestStation() -> String? {
+    private func getNearestStation() -> String? {
         guard let clLocation = self.location else {
             return nil
         }
@@ -103,27 +109,3 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         return nearestStation?.name
     }
 }
-
-
-
-
-struct LocationView: View {
-    @StateObject private var viewModel = LocationManager()
-
-    var body: some View {
-        VStack {
-            if let location = viewModel.location {
-                Text(viewModel.nearestStation)
-            } else {
-                Text("Fetching location...")
-            }
-        }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        LocationView()
-    }
-}
-
