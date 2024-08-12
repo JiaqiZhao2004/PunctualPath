@@ -55,7 +55,7 @@ class StationSearchViewModel: ObservableObject {
     
     func switchDirection() {
         scheduleBook?.switchSchedules()
-        direction = trainDirectionFromURL(url:scheduleBook?.firstScheduleURL())
+        direction = trainDirectionFromURL(url:scheduleBook?.getFirstSchedule()?.getURL())
     }
     
     func selectStation(stationName: String) {
@@ -63,8 +63,8 @@ class StationSearchViewModel: ObservableObject {
         isStationSelected = true
         enteredStationName = stationName
         operationTime = getOperationTime()
-        scheduleBook = station?.getSchedules(time: operationTime)
-        direction = trainDirectionFromURL(url:scheduleBook?.firstScheduleURL())
+        scheduleBook = station?.getSchedules(lineName: "", time: operationTime)
+        direction = trainDirectionFromURL(url:scheduleBook?.getFirstSchedule()?.getURL())
     }
 }
 
@@ -207,7 +207,7 @@ struct StationSearchView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 Button {
-                    if let url = viewModel.scheduleBook?.firstScheduleURL() {
+                    if let url = viewModel.scheduleBook?.getFirstSchedule()?.getURL() {
                         UIApplication.shared.open(URL(string: url)!)
                     }
                 } label: {

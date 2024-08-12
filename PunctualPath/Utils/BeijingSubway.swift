@@ -16,10 +16,12 @@ enum OperationTime {
 
 
 class ScheduleBook {
+    let lineName: String
     let stationName: String
-    var schedules: [Schedule] = []
+    private var schedules: [Schedule] = []
     
-    init(stationName: String, schedules: [Schedule]) {
+    init(lineName: String, stationName: String, schedules: [Schedule]) {
+        self.lineName = lineName
         self.stationName = stationName
         self.schedules = schedules
     }
@@ -27,22 +29,127 @@ class ScheduleBook {
     func addSchedule(_ schedule: Schedule) {
         schedules.append(schedule)
     }
+    
+    func getSchedules() -> [Schedule] {
+        return schedules
+    }
 
     func switchSchedules() {
         guard !schedules.isEmpty else { return }
         schedules.append(schedules.removeFirst())
     }
     
-    func firstScheduleURL() -> String {
-        return schedules.first?.url ?? ""
+    func getFirstSchedule() -> Schedule? {
+        return schedules.first
     }
     
-    func firstScheduleArrivalTimes() -> [Int] {
-        return schedules.first?.arrivalTimes.sorted() ?? []
+//    func firstScheduleURL() -> String {
+//        return schedules.first?.url ?? ""
+//    }
+    
+//    func firstScheduleArrivalTimes() -> [Int] {
+//        return schedules.first?.arrivalTimes.sorted() ?? []
+//    }
+    
+//    func firstScheduleNextTrain(at: Int = getSecondsSinceStartOfDay()) -> Int {
+//        let arrivalTimes = firstScheduleArrivalTimes()
+//        var arrivalTime = 0
+//        var index = 0
+//        
+//        while arrivalTime <= at {
+//            if index == arrivalTimes.count {
+//                return -1
+//            }
+//            arrivalTime = arrivalTimes[index]
+//            index += 1
+//        }
+//        return arrivalTime
+//    }
+//    
+//    func nextTrainTimer() {
+//        return scheduleBook.firstScheduleNextTrain() - getSecondsSinceStartOfDay()
+//    }
+//
+//    func printURLs() {
+//        for schedule in schedules {
+//            print(schedule.url)
+//        }
+//    }
+    
+
+//    func getImg(completion: @escaping (UIImage?) -> Void) {
+//        guard !schedules.isEmpty else {
+//            completion(nil)
+//            return
+//        }
+//        print("Getting image from \(schedules[0])")
+//        guard let url = URL(string: schedules[0].url) else {
+//            completion(nil)
+//            return
+//        }
+//
+//        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+//            guard let data = data, error == nil else {
+//                print("Download error: \(error?.localizedDescription ?? "Unknown error")")
+//                completion(nil)
+//                return
+//            }
+//            let image = UIImage(data: data)
+//            completion(image)
+//        }
+//        task.resume()
+//    }
+//
+//    func getImg() async -> UIImage? {
+//        guard !schedules.isEmpty else {
+//            return nil
+//        }
+//        print("Getting image from \(schedules[0])")
+//        guard let url = URL(string: schedules[0].url) else {
+//            return nil
+//        }
+//
+//        do {
+//            let (data, response) = try await URLSession.shared.data(from: url)
+//            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+//                print("Invalid response")
+//                return nil
+//            }
+//            let image = UIImage(data: data)
+//            return image
+//        } catch {
+//            print("Download error: \(error.localizedDescription)")
+//            return nil
+//        }
+//    }
+
+}
+
+class Schedule: CustomStringConvertible, Decodable {
+    private var url: String
+    private var arrivalTimes: [Int]
+    
+    init(url: String, arrivalTimes: [Int]) {
+        self.url = url
+        self.arrivalTimes = arrivalTimes.sorted()
+        
+        // for trains after 12 a.m.
+        for (index, value) in self.arrivalTimes.enumerated() {
+            if value < 3600 {
+                self.arrivalTimes[index] += 86400
+            }
+        }
     }
     
-    func firstScheduleNextTrain(at: Int = getCurrentTimeInSec()) -> Int {
-        let arrivalTimes = firstScheduleArrivalTimes()
+    func getURL() -> String {
+        return url
+    }
+    
+    func getArrivalTimes() -> [Int] {
+        return arrivalTimes
+    }
+    
+    func getNextTrainDepartureTime(at: Int = getSecondsSinceStartOfDay()) -> Int {
         var arrivalTime = 0
         var index = 0
         
@@ -55,22 +162,14 @@ class ScheduleBook {
         }
         return arrivalTime
     }
-
-    func printURLs() {
-        for schedule in schedules {
-            print(schedule.url)
-        }
+    
+    func getSecondNextTrainDepartureTime(at: Int = getSecondsSinceStartOfDay()) -> Int {
+        return getNextTrainDepartureTime(at: getNextTrainDepartureTime() + 1)
     }
     
-
     func getImg(completion: @escaping (UIImage?) -> Void) {
-        guard !schedules.isEmpty else {
-            completion(nil)
-            return
-        }
-        print("Getting image from \(schedules[0])")
-        guard let url = URL(string: schedules[0].url) else {
-            completion(nil)
+        print("Getting image from \(url)")
+        guard let url = URL(string: url) else {
             return
         }
 
@@ -87,11 +186,8 @@ class ScheduleBook {
     }
 
     func getImg() async -> UIImage? {
-        guard !schedules.isEmpty else {
-            return nil
-        }
-        print("Getting image from \(schedules[0])")
-        guard let url = URL(string: schedules[0].url) else {
+        print("Getting image from \(url)")
+        guard let url = URL(string: url) else {
             return nil
         }
 
@@ -106,24 +202,6 @@ class ScheduleBook {
         } catch {
             print("Download error: \(error.localizedDescription)")
             return nil
-        }
-    }
-
-}
-
-class Schedule: CustomStringConvertible, Decodable {
-    var url: String
-    var arrivalTimes: [Int]
-    
-    init(url: String, arrivalTimes: [Int]) {
-        self.url = url
-        self.arrivalTimes = arrivalTimes
-        
-        // for trains after 12 a.m.
-        for (index, value) in self.arrivalTimes.enumerated() {
-            if value < 3600 {
-                self.arrivalTimes[index] += 86400
-            }
         }
     }
     
@@ -148,27 +226,9 @@ class Schedule: CustomStringConvertible, Decodable {
         }
     }
     
-//    func setArrivalTimes(arrivalTimes: [Int]) -> Void {
-//        self.arrivalTimes = arrivalTimes
-//    }
-    
     var description: String {
         return url
     }
-    
-//    func addUrl(timetableUrl: String) -> OperationTime? {
-//        self.url = timetableUrl
-//        if timetableUrl.contains("工作日") {
-//            return .weekday
-//        }
-//        if timetableUrl.contains("双休日") {
-//            return .weekend
-//        }
-//        if !timetableUrl.contains("工作日") && !timetableUrl.contains("双休日") {
-//            return nil
-//        }
-//        return nil
-//    }
     
     static func fromDict(_ data: [String: Any]) -> Schedule {
         var arrivalTimes: [Int] = []
@@ -219,7 +279,7 @@ class Station: CustomStringConvertible, Decodable {
         }
     }
     
-    func getSchedules(time: OperationTime) -> ScheduleBook {
+    func getSchedules(lineName: String, time: OperationTime) -> ScheduleBook {
         var schedules: [Schedule] = []
         if time == .weekday {
             schedules = weekdaySchedules
@@ -230,7 +290,7 @@ class Station: CustomStringConvertible, Decodable {
         if schedules.isEmpty {
             schedules = unknownSchedules
         }
-        return ScheduleBook(stationName: nativeName, schedules: schedules)
+        return ScheduleBook(lineName: lineName, stationName: nativeName, schedules: schedules)
     }
     
 
@@ -332,15 +392,6 @@ class BeijingSubway: Decodable, ObservableObject {
     func getLines() -> [Line] {
         return Array(lines.values)
     }
-
-    subscript(key: String) -> Line? {
-        get {
-            return lines[key]
-        }
-        set {
-            lines[key] = newValue
-        }
-    }
     
     func getStationScheduleBooks(name: String) -> [ScheduleBook] {
         var scheduleBooks: [ScheduleBook] = []
@@ -348,7 +399,7 @@ class BeijingSubway: Decodable, ObservableObject {
             for stationName in line.stationList {
                 if stationName == name {
                     if let station = line.stations[stationName] {
-                        let scheduleBook: ScheduleBook = station.getSchedules(time: getOperationTime())
+                        let scheduleBook: ScheduleBook = station.getSchedules(lineName: lineName, time: getOperationTime())
                         scheduleBooks.append(scheduleBook)
                     }
                 }
