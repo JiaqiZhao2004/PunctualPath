@@ -12,7 +12,7 @@ import Combine
 
 
 @MainActor
-class LineSearchViewModel: ObservableObject {
+class StationSearchViewModel: ObservableObject {
     
     var beijingSubway: BeijingSubway
     
@@ -69,9 +69,9 @@ class LineSearchViewModel: ObservableObject {
 }
 
 
-struct LineSearchView: View {
+struct StationSearchView: View {
     
-    @StateObject private var viewModel = LineSearchViewModel()
+    @StateObject private var viewModel = StationSearchViewModel()
     
     @State var isTimerOn: Bool = false
     @FocusState var isTextFieldFocused: Bool
@@ -79,7 +79,6 @@ struct LineSearchView: View {
     
     var body: some View {
         VStack {
-            LocationView()
             ZStack {
                 NormalText(text: "北京地铁")
                     .padding(.trailing, 280)
@@ -218,11 +217,6 @@ struct LineSearchView: View {
             
         }
         .navigationTitle("地铁准时宝")
-        .sheet(isPresented: $isTimerOn) {
-            if let scheduleBook = viewModel.scheduleBook {
-                TimerView(isTimerOn: $isTimerOn, stationName: viewModel.station?.nativeName ?? "站名错误", scheduleBook: scheduleBook)
-            }
-        }
     }
     
     
@@ -231,6 +225,6 @@ struct LineSearchView: View {
 
 #Preview {
     NavigationStack {
-        LineSearchView()
+        StationSearchView()
     }
 }

@@ -8,16 +8,17 @@
 
 /* Begin PBXBuildFile section */
 		CF19AD662C16EF39004BCA08 /* PunctualPathApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF19AD652C16EF39004BCA08 /* PunctualPathApp.swift */; };
-		CF19AD682C16EF39004BCA08 /* TimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF19AD672C16EF39004BCA08 /* TimerView.swift */; };
+		CF19AD682C16EF39004BCA08 /* StationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF19AD672C16EF39004BCA08 /* StationView.swift */; };
 		CF19AD6A2C16EF3B004BCA08 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CF19AD692C16EF3B004BCA08 /* Assets.xcassets */; };
 		CF19AD6D2C16EF3B004BCA08 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CF19AD6C2C16EF3B004BCA08 /* Preview Assets.xcassets */; };
-		CF433D172C1C216B00FF0E7F /* LineSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF433D162C1C216B00FF0E7F /* LineSearchView.swift */; };
+		CF433D172C1C216B00FF0E7F /* StationSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF433D162C1C216B00FF0E7F /* StationSearchView.swift */; };
 		CFAA15252C2AFA950080817F /* BeijingSubway.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA15242C2AFA950080817F /* BeijingSubway.swift */; };
 		CFAA152A2C2AFFCE0080817F /* Kanna in Frameworks */ = {isa = PBXBuildFile; productRef = CFAA15292C2AFFCE0080817F /* Kanna */; };
 		CFC0D1CD2C661415002C7747 /* GeneralUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFC0D1CC2C661415002C7747 /* GeneralUtils.swift */; };
 		CFC0D1D12C6649CF002C7747 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFC0D1D02C6649CF002C7747 /* Constants.swift */; };
 		CFC0D1D32C664D4A002C7747 /* StationLocations.json in Resources */ = {isa = PBXBuildFile; fileRef = CFC0D1D22C664D4A002C7747 /* StationLocations.json */; };
 		CFC0D1D52C671FB3002C7747 /* LocationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFC0D1D42C671FB3002C7747 /* LocationView.swift */; };
+		CFC0D1D72C6748ED002C7747 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFC0D1D62C6748ED002C7747 /* RootView.swift */; };
 		CFDB01BB2C581D3B00584FC4 /* NormalText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFDB01BA2C581D3B00584FC4 /* NormalText.swift */; };
 		CFDB01BD2C581DC400584FC4 /* CapsuleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFDB01BC2C581DC400584FC4 /* CapsuleText.swift */; };
 		CFDB01C12C58E35600584FC4 /* LargeCapsuleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFDB01C02C58E35600584FC4 /* LargeCapsuleText.swift */; };
@@ -30,15 +31,16 @@
 /* Begin PBXFileReference section */
 		CF19AD622C16EF39004BCA08 /* PunctualPath.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PunctualPath.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF19AD652C16EF39004BCA08 /* PunctualPathApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PunctualPathApp.swift; sourceTree = "<group>"; };
-		CF19AD672C16EF39004BCA08 /* TimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerView.swift; sourceTree = "<group>"; };
+		CF19AD672C16EF39004BCA08 /* StationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationView.swift; sourceTree = "<group>"; };
 		CF19AD692C16EF3B004BCA08 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CF19AD6C2C16EF3B004BCA08 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		CF433D162C1C216B00FF0E7F /* LineSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineSearchView.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		CF433D162C1C216B00FF0E7F /* StationSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationSearchView.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		CFAA15242C2AFA950080817F /* BeijingSubway.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeijingSubway.swift; sourceTree = "<group>"; };
 		CFC0D1CC2C661415002C7747 /* GeneralUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralUtils.swift; sourceTree = "<group>"; };
 		CFC0D1D02C6649CF002C7747 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		CFC0D1D22C664D4A002C7747 /* StationLocations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = StationLocations.json; sourceTree = "<group>"; };
 		CFC0D1D42C671FB3002C7747 /* LocationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationView.swift; sourceTree = "<group>"; };
+		CFC0D1D62C6748ED002C7747 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		CFDB01BA2C581D3B00584FC4 /* NormalText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NormalText.swift; sourceTree = "<group>"; };
 		CFDB01BC2C581DC400584FC4 /* CapsuleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapsuleText.swift; sourceTree = "<group>"; };
 		CFDB01C02C58E35600584FC4 /* LargeCapsuleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeCapsuleText.swift; sourceTree = "<group>"; };
@@ -80,9 +82,10 @@
 			isa = PBXGroup;
 			children = (
 				CF19AD652C16EF39004BCA08 /* PunctualPathApp.swift */,
-				CF433D162C1C216B00FF0E7F /* LineSearchView.swift */,
+				CFC0D1D62C6748ED002C7747 /* RootView.swift */,
+				CF433D162C1C216B00FF0E7F /* StationSearchView.swift */,
 				CFC0D1D42C671FB3002C7747 /* LocationView.swift */,
-				CF19AD672C16EF39004BCA08 /* TimerView.swift */,
+				CF19AD672C16EF39004BCA08 /* StationView.swift */,
 				CFC0D1D22C664D4A002C7747 /* StationLocations.json */,
 				CFDB01C22C5B21AB00584FC4 /* urls.json */,
 				CFC0D1CB2C6613CC002C7747 /* Utils */,
@@ -203,16 +206,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CF19AD682C16EF39004BCA08 /* TimerView.swift in Sources */,
+				CF19AD682C16EF39004BCA08 /* StationView.swift in Sources */,
 				CFAA15252C2AFA950080817F /* BeijingSubway.swift in Sources */,
 				CFC0D1CD2C661415002C7747 /* GeneralUtils.swift in Sources */,
 				CF19AD662C16EF39004BCA08 /* PunctualPathApp.swift in Sources */,
+				CFC0D1D72C6748ED002C7747 /* RootView.swift in Sources */,
 				CFDB01CA2C630F2800584FC4 /* DiagonalStripes.swift in Sources */,
 				CFDB01C82C625C3600584FC4 /* TimeUtils.swift in Sources */,
 				CFC0D1D12C6649CF002C7747 /* Constants.swift in Sources */,
 				CFDB01C62C62524500584FC4 /* ToggleButton.swift in Sources */,
 				CFDB01C12C58E35600584FC4 /* LargeCapsuleText.swift in Sources */,
-				CF433D172C1C216B00FF0E7F /* LineSearchView.swift in Sources */,
+				CF433D172C1C216B00FF0E7F /* StationSearchView.swift in Sources */,
 				CFC0D1D52C671FB3002C7747 /* LocationView.swift in Sources */,
 				CFDB01BB2C581D3B00584FC4 /* NormalText.swift in Sources */,
 				CFDB01BD2C581DC400584FC4 /* CapsuleText.swift in Sources */,

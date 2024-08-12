@@ -16,9 +16,11 @@ enum OperationTime {
 
 
 class ScheduleBook {
+    let stationName: String
     var schedules: [Schedule] = []
     
-    init(schedules: [Schedule]) {
+    init(stationName: String, schedules: [Schedule]) {
+        self.stationName = stationName
         self.schedules = schedules
     }
     
@@ -228,7 +230,7 @@ class Station: CustomStringConvertible, Decodable {
         if schedules.isEmpty {
             schedules = unknownSchedules
         }
-        return ScheduleBook(schedules: schedules)
+        return ScheduleBook(stationName: nativeName, schedules: schedules)
     }
     
 
@@ -314,7 +316,7 @@ class Line: CustomStringConvertible, Decodable {
 }
 
 
-class BeijingSubway: Decodable {
+class BeijingSubway: Decodable, ObservableObject {
     var name: String
     var lines: [String: Line]
     
@@ -339,6 +341,21 @@ class BeijingSubway: Decodable {
             lines[key] = newValue
         }
     }
+    
+    func getStationScheduleBooks(name: String) -> [ScheduleBook] {
+        var scheduleBooks: [ScheduleBook] = []
+        for (lineName, line) in lines {
+            for stationName in line.stationList {
+                if stationName == name {
+                    if let station = line.stations[stationName] {
+                        let scheduleBook: ScheduleBook = station.getSchedules(time: getOperationTime())
+                        scheduleBooks.append(scheduleBook)
+                    }
+                }
+            }
+        }
+        return scheduleBooks
+    }
 
 
     static func fromDict(_ data: [String: Any]) -> BeijingSubway {
@@ -359,14 +376,6 @@ class BeijingSubway: Decodable {
         guard let contents = try? Data(contentsOf: textFileUrl) else {
             return nil
         }
-        
-//        do {
-//            let subway = try JSONDecoder().decode(BeijingSubway.self, from: contents)
-//            return subway
-//        } catch {
-//            print("Failed to decode BeijingSubway: \(error)")
-//            return nil
-//        }
         
         guard let json = try? JSONSerialization.jsonObject(with: contents, options: []) as? [String: Any] else {
             return nil

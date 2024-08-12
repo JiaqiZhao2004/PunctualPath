@@ -40,7 +40,7 @@ func getStationLocations() -> [String: Location] {
     return [:]
 }
 
-class LocationViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
+class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var location: CLLocation?
     private var locationManager: CLLocationManager
     private var timer: AnyCancellable?
@@ -108,7 +108,7 @@ class LocationViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
 
 
 struct LocationView: View {
-    @StateObject private var viewModel = LocationViewModel()
+    @StateObject private var viewModel = LocationManager()
 
     var body: some View {
         VStack {
